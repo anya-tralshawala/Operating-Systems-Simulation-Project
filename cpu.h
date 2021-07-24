@@ -4,10 +4,13 @@ class cpu
 {
 
 public:
-    cpu(/* args */);
-
+    cpu(process i);
+    void setProcess(process i){running_process = i;}
+    bool checkstate(){return isrunning;}
+    process getProcess(){return running_process;}
 private:
     /* data */
-    // process::process running_process;
+    process running_process;
+    bool isrunning;
 };
 
