@@ -1,3 +1,4 @@
+
 #include <iostream>
 #include <fstream>
 #include <vector>
@@ -6,30 +7,35 @@
 #include <string>
 #include "cpu.h"
 
-std::string printQueue(std::vector<process> queue){
-    if(queue.size() == 0){
+std::string printQueue(std::vector<process> queue)
+{
+    if (queue.size() == 0)
+    {
         std::string emptyQ = "[Q empty]";
         return emptyQ;
     }
     std::string Q = "[Q ";
-    for(int i = 0; i<queue.size(); i++){
+    for (int i = 0; i < queue.size(); i++)
+    {
         char temp = toupper(char(queue[i].getpID()));
-        if(i != queue.size() - 1){
+        if (i != queue.size() - 1)
+        {
             Q = Q + temp + " ";
         }
-        else{
+        else
+        {
             Q = Q + temp;
         }
-        
-    }    
+    }
     Q = Q + "]";
     return Q;
 }
 //algo go here
 
 //First-come-first-served (FCFS)
-void FCFS(std::vector<process> processes){
-    
+void FCFS(std::vector<process> processes, double t_cs)
+{
+
     int total_processes = processes.size();
     int completed = 0;
     int time = 0;
@@ -37,55 +43,87 @@ void FCFS(std::vector<process> processes){
     std::vector<process> queue;
     std::vector<process> waitstate;
     std::vector<cpuBurst> emptylist;
-    
-    process i = process(0,0,0,emptylist,0,0);
-    
+
+    process i = process(0, 0, 0, emptylist, 0, 0);
+
     cpu aCPU = cpu(i);
-    
-    printf("time %dms: Simulator started for FCFS %s\n",time,printQueue(queue).c_str());
+
+    printf("time %dms: Simulator started for FCFS %s\n", time, printQueue(queue).c_str());
 
     /*start simulation, continue until all processes are completed*/
-    while(completed != total_processes){
-        break;
+    while (completed != total_processes && time != 300)
+    {
+
         /*check if processes arrive*/
-        for(int i = 0; i<total_processes; i++){
-            if(processes[i].getArrivialTime() == time){
+        for (int i = 0; i < total_processes; i++)
+        {
+            if (processes[i].getArrivialTime() == time)
+            {
                 queue.push_back(processes[i]);
-                printf("time %dms: Process %c arrived; added to ready queue %s\n",time, toupper(char(processes[i].getpID())) ,printQueue(queue).c_str());
+                printf("time %dms: Process %c arrived; added to ready queue %s\n", time, toupper(char(processes[i].getpID())), printQueue(queue).c_str());
             }
         }
         /*check is process is done running on CPU*/
-        if(aCPU.checkstate() == true){
+        if (aCPU.checkstate() == true)
+        {
+
             /*something is running on the CPU, check if it is finished*/
             process current = aCPU.getProcess();
+            current.setBurst(current.getAllBursts()[0]);
             /*check if the CPU burst of the process is finished*/
-            if(current.getCurrent().get_CPUtime() == time){
-                int check_finished =  current.getRemainingBursts();
-                if(check_finished == 0){
+            //printf("%f", current.getCurrent().get_CPUtime());
+            if (current.getCurrent().get_CPUtime() == time)
+            {
+
+                aCPU.setState(false);
+                int check_finished = current.getRemainingBursts();
+                if (check_finished == 0)
+                {
+
                     /*all CPU bursts completed, update number of completed processes*/
                     completed += 1;
                     aCPU.setProcess(i);
+
                     printf("time %dms: Process %c terminated %s\n", time, toupper(char(current.getpID())), printQueue(queue).c_str());
+                    context_switch += 1;
                 }
-                else{
+                else
+                {
                     /*CPU burst finished, remove from burst list and switch waiting on IO*/
                     printf("time %dms: Process %c completed a CPU burst; %d bursts to go %s\n", time, toupper(char(current.getpID())), check_finished, printQueue(queue).c_str());
-                    current.removeBurst(current.getCurrent());
+
                     waitstate.push_back(current);
-                    int waiting_time = time + current.getCurrent().get_IOtime();
-
-
-
+                    int waiting_time = time + current.getCurrent().get_IOtime() + t_cs;
+                    current.removeBurst(current.getCurrent());
+                    printf("time %dms: Process %c switching out of CPU; will block on I/O until time %dms %s\n", time, toupper(char(current.getpID())), waiting_time, printQueue(queue).c_str());
                 }
-                context_switch += 1;
             }
         }
 
-        
+        /*check if ready queue is not empty, and if CPU is available*/
+        if (queue.size() != 0)
+        {
+
+            if (aCPU.checkstate() == false)
+            {
+                /*start running process*/
+
+                /*set CPU state and update process running on CPU*/
+                aCPU.setState(true);
+                aCPU.setProcess(queue.front());
+                
+                process nowrunning = queue.front();
+                
+                queue.erase(queue.begin());
+
+                time += t_cs / 2;
+                printf("time %dms: Process %c started using the CPU for %fms burst %s\n", time, toupper(char(nowrunning.getpID())), nowrunning.getAllBursts()[0].get_CPUtime(), printQueue(queue).c_str());
+            }
+        }
+
         /*increment time variable*/
         time += 1;
     }
-
 }
 //Shortest job first (SJF)
 
@@ -94,8 +132,6 @@ void FCFS(std::vector<process> processes){
 //Round robin (RR)
 
 //Skipping preemptions in RR
-
-
 
 double next_exp(double lambda, double upper_bound)
 {
@@ -121,17 +157,17 @@ std::vector<process> create_processes(int n, int seed, double lambda, double upp
     {
         alphabet[letter - 'a'] = letter;
     }
-    
+
     for (int i = 0; i < n; i++)
     {
         // int aState, int aPid, double aTime,std::vector<cpuBurst> aBurstList)
         //number of bursts is ceil(drand48() * 100)
         double arrival_time = floor(next_exp(lambda, upper_bound));
         std::vector<cpuBurst> aBurstList;
-        
+
         //populate burst list
         int num_bursts = ceil(drand48() * 100);
-        
+
         for (int j = 0; j < num_bursts; j++)
         {
             double CPU_burst_time = ceil(next_exp(lambda, upper_bound));
@@ -140,14 +176,16 @@ std::vector<process> create_processes(int n, int seed, double lambda, double upp
             {
                 IO_time = -99;
             }
-            else{
-                 IO_time= ceil(next_exp(lambda, upper_bound)) * 10;
+            else
+            {
+                IO_time = ceil(next_exp(lambda, upper_bound)) * 10;
             }
-            
+
             cpuBurst current_burst = cpuBurst(CPU_burst_time, IO_time);
+
             aBurstList.push_back(current_burst);
         }
-        
+
         process current_process = process(0, alphabet[i], arrival_time, aBurstList, num_bursts, 0);
         return_vector.push_back(current_process);
     }
@@ -162,7 +200,7 @@ std::vector<process> create_processes(int n, int seed, double lambda, double upp
 
 int main(int argc, char *argv[])
 {
-    
+
     int n = std::stoi(argv[1]);
     int seed = std::stoi(argv[2]);
     double lambda = std::stod(argv[3]);
@@ -172,11 +210,10 @@ int main(int argc, char *argv[])
     double t_slice = std::stod(argv[7]);
 
     double tau_initial = t_cs / 2;
-    
+
     // create vector of processes
     srand48(seed);
     std::vector<process> processes = create_processes(n, seed, lambda, upper_bound);
-    
 
     /*
     for(int i = 0; i < processes.size(); i++){
@@ -186,8 +223,8 @@ int main(int argc, char *argv[])
 
 
     }*/
-    
-    FCFS(processes);
+
+    FCFS(processes, t_cs);
 
     return 0;
 }

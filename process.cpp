@@ -24,6 +24,16 @@ process::process(){
 
 }
 
+process::process(const process &i){
+    all_bursts = i.all_bursts;
+    state = i.state;
+    arrival_time = i.arrival_time;
+    pid = i.pid;
+    total_bursts = i.total_bursts;
+    bursts_completed = i.bursts_completed;
+    cpuBurst currently_on = i.currently_on;
+}
+
 void process::removeBurst(cpuBurst removethis){
     std::vector<cpuBurst>::iterator itr;
     

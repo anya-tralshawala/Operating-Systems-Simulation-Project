@@ -7,6 +7,8 @@ class process
 public:
     process(int aState, int aPid, double aTime,std::vector<cpuBurst> aBurstList, int atotal_bursts, int abursts_completed);
     process();
+    process(const process &i);
+
     // ACCESSORS
     int getState() { return state; }
     int getpID(){return pid;}
@@ -15,6 +17,7 @@ public:
     int getBurstsCompleted(){ return bursts_completed;}
     int getRemainingBursts(){ return total_bursts - bursts_completed;}
     cpuBurst getCurrent(){return currently_on;}
+    
     std::vector<cpuBurst> getAllBursts(){return all_bursts;}
     // cpuBurst cpuBurst::getBurstAt(int i){return all_bursts[i]}
 
@@ -23,6 +26,7 @@ public:
     void setTurnaroundTime(double set_time){turnaround_time = set_time;}
     void setCompletionTime(double set_time){completion_time = set_time;}
     void removeBurst(cpuBurst removethis);
+    void setBurst(cpuBurst setthis){currently_on = setthis;}
     //private member variables
 private:
     std::vector<cpuBurst> all_bursts;
@@ -39,3 +43,4 @@ private:
 };
 //bools we will use in sorting
 bool less_names();
+
