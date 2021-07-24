@@ -1,15 +1,39 @@
 #include "process.h"
 
-process::process(int aState, int aPid, double aTime,std::vector<cpuBurst> aBurstList)
+process::process(int aState, int aPid, double aTime,std::vector<cpuBurst> aBurstList, int atotal_bursts, int abursts_completed)
 
 {
     // process id, arrival time, cpu bursts
+    
     all_bursts = aBurstList;
     state = aState;
     arrival_time = aTime;
     pid = aPid;
+    total_bursts = atotal_bursts;
+    bursts_completed = abursts_completed;
+    cpuBurst currently_on = cpuBurst();
+  
+}
+process::process(){
+    std::vector<cpuBurst> emptylist;
+    all_bursts = emptylist;
+    state = 0;
+    arrival_time = 0;
+    pid = 0; 
+    cpuBurst currently_on = cpuBurst(0,0);
+
 }
 
+void process::removeBurst(cpuBurst removethis){
+    std::vector<cpuBurst>::iterator itr;
+    
+    for(itr = all_bursts.begin(); itr != all_bursts.end(); ++itr){
+        if(itr->get_CPUtime() == removethis.get_CPUtime() && itr ->get_IOtime() == removethis.get_IOtime()){
+            itr = all_bursts.erase(itr);
+            break;
+        }
+    }
+}
 // bool lesort_by()
 // {
 // }
