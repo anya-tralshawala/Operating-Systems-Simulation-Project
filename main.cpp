@@ -37,7 +37,7 @@ double next_exp(double lambda, double upper_bound)
 
 std::vector<process> create_processes(int n, int seed, double lambda, double upper_bound)
 {
-    std::vector<process> return_vector(n);
+    std::vector<process> return_vector;
     char alphabet[26];
     for (int letter = 'a'; letter <= 'z'; letter++)
     {
@@ -48,9 +48,10 @@ std::vector<process> create_processes(int n, int seed, double lambda, double upp
     {
         // int aState, int aPid, double aTime,std::vector<cpuBurst> aBurstList)
         //number of processes is ceil(drand48() * 100)
-        std::vector<cpuBurst> aBurstList(ceil(drand48() * 100));
+        std::vector<cpuBurst> aBurstList;
+
         //populate burst list
-        for (int j = 0; j < aBurstList.size(); j++)
+        for (int j = 0; j < ceil(drand48() * 100); j++)
         {
             double CPU_burst_time = ceil(next_exp(lambda, upper_bound));
             double IO_time = ceil(next_exp(lambda, upper_bound)) * 10;
@@ -86,9 +87,19 @@ int main(int argc, char *argv[])
 
     double tau_initial = t_cs / 2;
 
-    //create vector of processes
+    // create vector of processes
     srand48(seed);
     std::vector<process> processes = create_processes(n, seed, lambda, upper_bound);
+
+
+
+    for(int i = 0; i < processes.size(); i++){
+        std::cout<<"in the vector pID is: "<<processes[i].getpID()<<"\n";
+        std::cout<<"in the vector pID is: "<<processes[i].getArrivialTime()<<"\n";
+        std::cout<<"in the vector pID is: "<<processes[i].getState()<<"\n";
+
+
+    }
 
     return 0;
 }

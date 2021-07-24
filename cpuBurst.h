@@ -9,7 +9,8 @@ public:
     private:
       double CPU_time;
       double IO_time;
-  bool less_names();
+
 
 };
 
+  // bool less_names();
