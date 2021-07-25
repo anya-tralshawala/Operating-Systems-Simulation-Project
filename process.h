@@ -17,8 +17,9 @@ public:
     int getBurstsCompleted(){ return bursts_completed;}
     int getRemainingBursts(){ return all_bursts.size();}
     cpuBurst getCurrent(){return currently_on;}
-    
+    double getWait(){return wait_queue;}
     std::vector<cpuBurst> getAllBursts(){return all_bursts;}
+    double getTurnaroundTime(){return turnaround_time;}
     // cpuBurst cpuBurst::getBurstAt(int i){return all_bursts[i]}
 
     // MODIFIERS
@@ -27,6 +28,8 @@ public:
     void setCompletionTime(double set_time){completion_time = set_time;}
     void removeBurst(cpuBurst removethis);
     void setBurst(cpuBurst setthis){currently_on = setthis;}
+    void updateWaitTime(){wait_queue += 1;}
+
     //private member variables
 private:
     std::vector<cpuBurst> all_bursts;
@@ -41,6 +44,8 @@ private:
     int total_bursts;
     int remaining_time;
     int total_time;
+    double wait_queue;
+    
 
 };
 //bools we will use in sorting
