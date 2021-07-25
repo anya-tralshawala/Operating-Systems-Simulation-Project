@@ -16,6 +16,7 @@ public:
     int getTotalBursts(){ return total_bursts;}
     int getBurstsCompleted(){ return bursts_completed;}
     int getRemainingBursts(){ return all_bursts.size();}
+    int getRemainingTime(){ return total_time - remaining_time;}
     cpuBurst getCurrent(){return currently_on;}
     double getWait(){return wait_queue;}
     std::vector<cpuBurst> getAllBursts(){return all_bursts;}
