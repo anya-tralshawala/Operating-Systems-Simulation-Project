@@ -20,6 +20,7 @@ public:
     double getWait(){return wait_queue;}
     std::vector<cpuBurst> getAllBursts(){return all_bursts;}
     double getTurnaroundTime(){return turnaround_time;}
+    double getWaitTime(){return wait_time;}
     // cpuBurst cpuBurst::getBurstAt(int i){return all_bursts[i]}
 
     // MODIFIERS

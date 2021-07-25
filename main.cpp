@@ -89,26 +89,6 @@ void FCFS(std::vector<process> processes, double t_cs)
     /*start simulation, continue until all processes are completed*/
     while (completed != total_processes)
     {
-        /*check if waitIO queue has anything that finished*/
-        if(waitstate.size() != 0){
-            
-            //loop through, check if any IO has finished
-            for(int i = 0; i<waitstate.size(); i++){
-                
-                process curr = waitstate[i];
-               
-                curr.setBurst(aCPU.get_prev());
-                
-                if(aCPU.get_waiting() == time){
-                    
-                    //process completed IO burst, add back to the ready queue
-                    queue.push_back(curr);
-                    std::vector<process>::iterator itr2 = waitstate.begin() + i;
-                    waitstate.erase(itr2);
-                    printf("time %dms: Process %c completed I/O; added to ready queue %s\n", time, toupper(char(curr.getpID())), printQueue(queue).c_str());
-                }
-            }
-        }
         /*check if processes arrive*/
         for (int i = 0; i < total_processes; i++)
         {
@@ -118,6 +98,28 @@ void FCFS(std::vector<process> processes, double t_cs)
                 printf("time %dms: Process %c arrived; added to ready queue %s\n", time, toupper(char(processes[i].getpID())), printQueue(queue).c_str());
             }
         }
+        /*check if waitIO queue has anything that finished*/
+        if(waitstate.size() != 0){
+            
+            //loop through, check if any IO has finished
+            for(int i = 0; i<waitstate.size(); i++){
+                
+                process curr = waitstate[i];
+               
+                curr.setBurst(aCPU.get_prev());
+                //printf("curr: %f\n", curr.getWaitTime());
+                //printf("time: %d\n", time);
+                if(int(curr.getWaitTime()) == time){
+                    curr.setWaitTime(-99);
+                    //process completed IO burst, add back to the ready queue
+                    queue.push_back(curr);
+                    std::vector<process>::iterator itr2 = waitstate.begin() + i;
+                    waitstate.erase(itr2);
+                    printf("time %dms: Process %c completed I/O; added to ready queue %s\n", time, toupper(char(curr.getpID())), printQueue(queue).c_str());
+                }
+            }
+        }
+        
         /*check is process is done running on CPU*/
         if (aCPU.checkstate() == true)
         {
@@ -178,18 +180,20 @@ void FCFS(std::vector<process> processes, double t_cs)
                     //printf("%d, %f, %f\n", time, current.getCurrent().get_IOtime(), switch_time);
                     aCPU.set_prev(current.getCurrent());
                     current.removeBurst(current.getCurrent());
-                    aCPU.set_waiting(waiting_time);
+                    waitstate.back().setWaitTime(waiting_time);
+                    
+                    //aCPU.set_waiting(waiting_time);
                     
                     printf("time %dms: Process %c switching out of CPU; will block on I/O until time %dms %s\n", time, toupper(char(current.getpID())), int(waiting_time), printQueue(queue).c_str());
                 }
                 context_switch += 1;
             }
         }
-
+        //printf("%s\n", printQueue(queue).c_str());
         /*check if ready queue is not empty, and if CPU is available*/
         if (queue.size() != 0)
         {
-
+            
             if (aCPU.checkstate() == false)
             {
                 /*start running process*/
@@ -274,7 +278,7 @@ std::vector<process> create_processes(int n, int seed, double lambda, double upp
             }
             else
             {
-                IO_time = ceil(next_exp(lambda, upper_bound)) * 10;
+                IO_time = ceil(next_exp(lambda, upper_bound) * 10);
             }
 
             cpuBurst current_burst = cpuBurst(CPU_burst_time, IO_time);
@@ -305,12 +309,17 @@ int main(int argc, char *argv[])
     double alpha = std::stod(argv[6]);
     double t_slice = std::stod(argv[7]);
 
-    double tau_initial = t_cs / 2;
+    double tau_initial = 1/lambda;
 
     // create vector of processes
     srand48(seed);
     std::vector<process> processes = create_processes(n, seed, lambda, upper_bound);
 
+    for(int i = 0; i<processes.size(); i++){
+        printf("Process %c (arrival time %d ms) %d CPU bursts (tau %dms)\n", toupper(char(processes[i].getpID())), processes[i].getArrivialTime(), processes[i].getTotalBursts(), int(tau_initial));
+    }
+    printf("\n");
+    printf("\n");
     /*
     for(int i = 0; i < processes.size(); i++){
         std::cout<<"in the vector pID is: "<<processes[i].getpID()<<"\n";

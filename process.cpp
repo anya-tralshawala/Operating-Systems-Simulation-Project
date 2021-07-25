@@ -43,6 +43,7 @@ process::process(const process &i){
     total_time = i.total_time;
     cpuBurst currently_on = i.currently_on;
     wait_queue = i.wait_queue;
+    wait_time = i.wait_time;
     
 }
 
