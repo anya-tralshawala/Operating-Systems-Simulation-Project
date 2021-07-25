@@ -71,11 +71,13 @@ void FCFS(std::vector<process> processes, double t_cs)
             process current = aCPU.getProcess();
             current.setBurst(current.getAllBursts()[0]);
             /*check if the CPU burst of the process is finished*/
-            //printf("%f", current.getCurrent().get_CPUtime());
-            if (current.getCurrent().get_CPUtime() == time)
-            {
+            //ISSUE: time needs to be compared to CPUtime + original time it started
+            if (current.getCurrent().get_CPUtime() + aCPU.getTime()== time)
 
+            {
+                
                 aCPU.setState(false);
+                current.removeBurst(current.getCurrent());
                 int check_finished = current.getRemainingBursts();
                 if (check_finished == 0)
                 {
@@ -83,7 +85,7 @@ void FCFS(std::vector<process> processes, double t_cs)
                     /*all CPU bursts completed, update number of completed processes*/
                     completed += 1;
                     aCPU.setProcess(i);
-
+                    
                     printf("time %dms: Process %c terminated %s\n", time, toupper(char(current.getpID())), printQueue(queue).c_str());
                     context_switch += 1;
                 }
@@ -91,8 +93,9 @@ void FCFS(std::vector<process> processes, double t_cs)
                 {
                     /*CPU burst finished, remove from burst list and switch waiting on IO*/
                     printf("time %dms: Process %c completed a CPU burst; %d bursts to go %s\n", time, toupper(char(current.getpID())), check_finished, printQueue(queue).c_str());
-
+                    
                     waitstate.push_back(current);
+                    
                     int waiting_time = time + current.getCurrent().get_IOtime() + t_cs;
                     current.removeBurst(current.getCurrent());
                     printf("time %dms: Process %c switching out of CPU; will block on I/O until time %dms %s\n", time, toupper(char(current.getpID())), waiting_time, printQueue(queue).c_str());
@@ -111,13 +114,29 @@ void FCFS(std::vector<process> processes, double t_cs)
                 /*set CPU state and update process running on CPU*/
                 aCPU.setState(true);
                 aCPU.setProcess(queue.front());
-                
+                aCPU.setTime(time);
                 process nowrunning = queue.front();
                 
                 queue.erase(queue.begin());
 
                 time += t_cs / 2;
                 printf("time %dms: Process %c started using the CPU for %fms burst %s\n", time, toupper(char(nowrunning.getpID())), nowrunning.getAllBursts()[0].get_CPUtime(), printQueue(queue).c_str());
+            }
+        }
+
+        /*check if waitIO queue has anything that finished*/
+        if(waitstate.size() != 0){
+            
+            //loop through, check if any IO has finished
+            for(int i = 0; i<waitstate.size(); i++){
+                process curr = waitstate[i];
+                //printf("%f\n",curr.getCurrent().get_IOtime());
+                if(curr.getCurrent().get_IOtime() == time){
+                    
+                    //process completed IO burst, add back to the ready queue, ISSUE: time not assigned properly, does not come into if
+                    queue.push_back(curr);
+                    printf("time %dms: Process %c completed I/O; added to ready queue %s\n", time, toupper(char(curr.getpID())), printQueue(queue).c_str());
+                }
             }
         }
 

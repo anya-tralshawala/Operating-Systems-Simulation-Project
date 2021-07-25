@@ -15,7 +15,7 @@ public:
     int getArrivialTime() { return arrival_time; }
     int getTotalBursts(){ return total_bursts;}
     int getBurstsCompleted(){ return bursts_completed;}
-    int getRemainingBursts(){ return total_bursts - bursts_completed;}
+    int getRemainingBursts(){ return all_bursts.size();}
     cpuBurst getCurrent(){return currently_on;}
     
     std::vector<cpuBurst> getAllBursts(){return all_bursts;}
