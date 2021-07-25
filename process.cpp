@@ -25,6 +25,8 @@ process::process(){
     cpuBurst currently_on = cpuBurst(0,0);
     remaining_time = 0;
     total_time = 0;
+    remaining_time = 0;
+    total_time = 0;
 
 }
 

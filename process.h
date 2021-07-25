@@ -5,7 +5,7 @@
 class process
 {
 public:
-    process(int aState, int aPid, double aTime,std::vector<cpuBurst> aBurstList, int atotal_bursts, int abursts_completed);
+    process(int aState, int aPid, double aTime,std::vector<cpuBurst> aBurstList, int atotal_bursts, int abursts_completed, int atotal_time, int aremaining_time);
     process();
     process(const process &i);
 
@@ -39,6 +39,8 @@ private:
     double completion_time;
     int bursts_completed;
     int total_bursts;
+    int remaining_time;
+    int total_time;
 
 };
 //bools we will use in sorting

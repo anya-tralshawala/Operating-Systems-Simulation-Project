@@ -96,7 +96,7 @@ void FCFS(std::vector<process> processes, double t_cs)
                     
                     waitstate.push_back(current);
                     
-                    int waiting_time = time + current.getCurrent().get_IOtime() + t_cs;
+                    int waiting_time = time + current.getCurrent().get_IOtime() + t_cs/2;
                     current.removeBurst(current.getCurrent());
                     printf("time %dms: Process %c switching out of CPU; will block on I/O until time %dms %s\n", time, toupper(char(current.getpID())), waiting_time, printQueue(queue).c_str());
                 }
@@ -114,7 +114,7 @@ void FCFS(std::vector<process> processes, double t_cs)
                 /*set CPU state and update process running on CPU*/
                 aCPU.setState(true);
                 aCPU.setProcess(queue.front());
-                aCPU.setTime(time);
+                aCPU.setTime(time + t_cs/2);
                 process nowrunning = queue.front();
                 
                 queue.erase(queue.begin());
