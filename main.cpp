@@ -44,7 +44,7 @@ void FCFS(std::vector<process> processes, double t_cs)
     std::vector<process> waitstate;
     std::vector<cpuBurst> emptylist;
 
-    process i = process(0, 0, 0, emptylist, 0, 0);
+    process i = process(0, 0, 0, emptylist, 0, 0, 0, 0);
 
     cpu aCPU = cpu(i);
 
@@ -147,6 +147,7 @@ void FCFS(std::vector<process> processes, double t_cs)
 //Shortest job first (SJF)
 
 //Shortest remaining time (SRT)
+    //use remaining time attribute (similar to FCFS in terms of structure and checks)
 
 //Round robin (RR)
 
@@ -179,7 +180,6 @@ std::vector<process> create_processes(int n, int seed, double lambda, double upp
 
     for (int i = 0; i < n; i++)
     {
-        // int aState, int aPid, double aTime,std::vector<cpuBurst> aBurstList)
         //number of bursts is ceil(drand48() * 100)
         double arrival_time = floor(next_exp(lambda, upper_bound));
         std::vector<cpuBurst> aBurstList;
@@ -205,7 +205,7 @@ std::vector<process> create_processes(int n, int seed, double lambda, double upp
             aBurstList.push_back(current_burst);
         }
 
-        process current_process = process(0, alphabet[i], arrival_time, aBurstList, num_bursts, 0);
+        process current_process = process(0, alphabet[i], arrival_time, aBurstList, num_bursts, 0, 0, 0);
         return_vector.push_back(current_process);
     }
 

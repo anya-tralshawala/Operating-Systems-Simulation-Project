@@ -1,3 +1,5 @@
-in the vector pID is: 97
-in the vector pID is: 9
-in the vector pID is: 0
+time 0ms: Simulator started for FCFS [Q empty]
+time 9ms: Process A arrived; added to ready queue [Q A]
+time 11ms: Process A started using the CPU for 56.000000ms burst [Q empty]
+time 56ms: Process A completed a CPU burst; 16 bursts to go [Q empty]
+time 56ms: Process A switching out of CPU; will block on I/O until time 290ms [Q empty]
