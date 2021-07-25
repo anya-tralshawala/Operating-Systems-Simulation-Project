@@ -1,7 +1,8 @@
 #include "cpu.h"
 
-cpu::cpu(process i){
-    
+cpu::cpu(process i)
+{
+
     running_process = i;
     isrunning = false;
     current_time = 0;
@@ -10,12 +11,15 @@ cpu::cpu(process i){
     time_active = 0;
 }
 
-void cpu::setProcess(process i){
+void cpu::setProcess(process i)
+{
     running_process = i;
 }
-void cpu::setTime(double time){
+void cpu::setTime(double time)
+{
     current_time = time;
 }
-void cpu::set_prev(cpuBurst i){
+void cpu::set_prev(cpuBurst i)
+{
     prev_burst = i;
 }

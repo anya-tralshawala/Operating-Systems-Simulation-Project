@@ -293,13 +293,14 @@ void SRT(std::vector<process> processes, double t_cs)
         for (int i = 0; i < total_processes; i++)
         {
             /*Find process with minimum remaining time in the queue*/
-            if ((processes[i].getArrivialTime() == time) && (processes[i].getRemainingTime() < min_time))
+            if (processes[i].getRemainingTime() < min_time)
             {
                 min_time = processes[i].getRemainingTime();
                 shortest = i;
                 check = true;
 
-                queue.push_back(processes[i]);
+                // insert in the front of queue
+                queue.insert(queue.begin(), processes[i]);
                 printf("time %dms: Process %c arrived; added to ready queue %s\n", time, toupper(char(processes[i].getpID())), printQueue(queue).c_str());
             }
             // decrease remaining time
@@ -349,7 +350,6 @@ void SRT(std::vector<process> processes, double t_cs)
                         printf("-- total number of context switches: %d\n", context_switch);
                         printf("-- total number of preemptions: %d\n", preemptions);
                         printf("-- CPU utilization: %.3f%%\n", CPU_active);
-
                         return;
                     }
                 }
