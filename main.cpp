@@ -235,7 +235,7 @@ void FCFS(std::vector<process> processes, double t_cs)
 //Shortest job first (SJF)
 
 //Shortest remaining time (SRT)
-void SRT(std::vector<process> processes, double t_cs)
+void SRT(std::vector<process> processes, double t_cs, int tau_initial)
 {
     int total_processes = processes.size();
     int completed = 0;
@@ -290,7 +290,7 @@ void SRT(std::vector<process> processes, double t_cs)
                     queue.push_back(curr);
                     std::vector<process>::iterator itr3 = waitstate.begin() + i;
                     waitstate.erase(itr3);
-                    printf("time %dms: Process %c completed I/O; added to ready queue %s\n", time, toupper(char(curr.getpID())), printQueue(queue).c_str());
+                    printf("time %dms: Process %c (tau %dms) completed I/O; added to ready queue %s\n", time, toupper(char(curr.getpID())), tau_initial, printQueue(queue).c_str());
                 }
             }
         }
@@ -367,7 +367,7 @@ void SRT(std::vector<process> processes, double t_cs)
                 else
                 {
                     /*CPU burst finished, remove from burst list and switch waiting on IO*/
-                    printf("time %dms: Process %c completed a CPU burst; %d bursts to go %s\n", time, toupper(char(current.getpID())), check_finished, printQueue(queue).c_str());
+                    printf("time %dms: Process %c (tau %dms) completed a CPU burst; %d bursts to go %s\n", time, toupper(char(current.getpID())), tau_initial, check_finished, printQueue(queue).c_str());
 
                     waitstate.push_back(current);
                     double switch_time = t_cs / 2;
@@ -401,7 +401,7 @@ void SRT(std::vector<process> processes, double t_cs)
                 queue.erase(queue.begin());
 
                 aCPU.updateActive(nowrunning.getAllBursts()[0].get_CPUtime());
-                printf("time %dms: Process %c started using the CPU for %dms burst %s\n", int(time + t_cs / 2), toupper(char(nowrunning.getpID())), int(nowrunning.getAllBursts()[0].get_CPUtime()), printQueue(queue).c_str());
+                printf("time %dms: Process %c (tau %dms) started using the CPU for %dms burst %s\n", int(time + t_cs / 2), toupper(char(nowrunning.getpID())), tau_initial, int(nowrunning.getAllBursts()[0].get_CPUtime()), printQueue(queue).c_str());
             }
 
             //update wait times, CPU is not available processes waiting
@@ -514,7 +514,7 @@ int main(int argc, char *argv[])
     }*/
 
     FCFS(processes, t_cs);
-    SRT(processes, t_cs);
+    SRT(processes, t_cs, tau_initial);
 
     return 0;
 }
