@@ -6,7 +6,7 @@
 #include <iomanip>
 #include <string>
 #include <algorithm>
-#include <bits/stdc++.h>
+//#include <bits/stdc++.h>
 #include "cpu.h"
 
 std::string printQueue(std::vector<process> queue)
@@ -448,7 +448,7 @@ std::vector<process> create_processes(int n, int seed, double lambda, double upp
         {
             double CPU_burst_time = ceil(next_exp(lambda, upper_bound));
             double IO_time;
-            if (j == aBurstList.size() - 1)
+            if (j == num_bursts - 1)
             {
                 IO_time = -99;
             }
@@ -456,7 +456,7 @@ std::vector<process> create_processes(int n, int seed, double lambda, double upp
             {
                 IO_time = ceil(next_exp(lambda, upper_bound) * 10);
             }
-
+            
             cpuBurst current_burst = cpuBurst(CPU_burst_time, IO_time);
 
             aBurstList.push_back(current_burst);
@@ -504,7 +504,7 @@ int main(int argc, char *argv[])
     }*/
 
     FCFS(processes, t_cs);
-    SRT(processes, t_cs);
+    //SRT(processes, t_cs);
 
     return 0;
 }
