@@ -6,7 +6,7 @@
 #include <iomanip>
 #include <string>
 #include <algorithm>
-//#include <bits/stdc++.h>
+#include <bits/stdc++.h>
 #include "cpu.h"
 
 std::string printQueue(std::vector<process> queue)
@@ -504,7 +504,7 @@ int main(int argc, char *argv[])
     }*/
 
     FCFS(processes, t_cs);
-    //SRT(processes, t_cs);
+    SRT(processes, t_cs);
 
     return 0;
 }
