@@ -209,6 +209,7 @@ void FCFS(std::vector<process> processes, double t_cs)
                 aCPU.setState(true);
 
                 aCPU.setProcess(queue.front());
+                
                 aCPU.setTime(time + t_cs / 2);
                 process nowrunning = queue.front();
 
@@ -364,6 +365,7 @@ void SRT(std::vector<process> processes, double t_cs)
                     waitstate.push_back(current);
                     double switch_time = t_cs / 2;
                     double waiting_time = time + current.getCurrent().get_IOtime() + switch_time;
+                    
                     aCPU.set_prev(current.getCurrent());
                     current.removeBurst(current.getCurrent());
                     aCPU.set_waiting(waiting_time);
@@ -454,7 +456,7 @@ std::vector<process> create_processes(int n, int seed, double lambda, double upp
             }
             else
             {
-                IO_time = ceil(next_exp(lambda, upper_bound) * 10);
+                IO_time = ceil(next_exp(lambda, upper_bound)) * 10;
             }
             
             cpuBurst current_burst = cpuBurst(CPU_burst_time, IO_time);
