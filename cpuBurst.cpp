@@ -12,6 +12,12 @@ cpuBurst::cpuBurst()
     IO_time = 0;
 }
 
+cpuBurst::cpuBurst(const cpuBurst &i)
+{
+    CPU_time = i.CPU_time;
+    IO_time = i.IO_time;
+}
+
 // bool lesort_by()
 // {
 // }

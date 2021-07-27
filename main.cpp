@@ -6,7 +6,7 @@
 #include <iomanip>
 #include <string>
 #include <algorithm>
-#include <bits/stdc++.h>
+//#include <bits/stdc++.h>
 #include "cpu.h"
 
 std::string printQueue(std::vector<process> queue)
@@ -479,7 +479,232 @@ void SRT(std::vector<process> processes, double t_cs, int tau_initial)
     }
 }
 //Round robin (RR)
+void RR(std::vector<process> processes, double t_cs, double t_slice){
+    int total_processes = processes.size();
+    int completed = 0;
+    int time = 0;
+    int context_switch = 0;
+    int preemptions = 0;
+    double avg_CPU_burst_time = avg_burst(processes);
+    std::vector<process> queue;
+    std::vector<process> waitstate;
+    std::vector<cpuBurst> emptylist;
+    std::vector<process> completed_processes;
+    std::vector<process> copy_process = processes;
+    process i = process(0, 0, 0, emptylist, 0, 0, 0, 0);
+    double time_switch = t_slice;
+    cpu aCPU = cpu(i);
 
+    printf("time %dms: Simulator started for RR %s\n", time, printQueue(queue).c_str());
+
+    /*start simulation, continue until all processes are completed*/
+    while (completed != total_processes)
+    {
+        /*check if processes arrive*/
+        for (int i = 0; i < total_processes; i++)
+        {
+            if (processes[i].getArrivialTime() == time)
+            {
+                queue.push_back(processes[i]);
+
+                printf("time %dms: Process %c arrived; added to ready queue %s\n", time, toupper(char(processes[i].getpID())), printQueue(queue).c_str());
+            }
+        }
+        /*check if waitIO queue has anything that finished*/
+        if (waitstate.size() != 0)
+        {
+
+            //loop through, check if any IO has finished
+            int save_size = waitstate.size();
+            int i = 0;
+            std::vector<process> temp_list;
+            while (i < waitstate.size())
+            {
+
+                process curr = waitstate[i];
+
+                curr.setBurst(aCPU.get_prev());
+                //printf("curr: %f\n", curr.getWaitTime());
+                //printf("time: %d\n", time);
+                if (int(curr.getWaitTime()) == time)
+                {
+
+                    curr.setWaitTime(-99);
+                    //process completed IO burst, add back to the ready queue
+                    temp_list.push_back(curr);
+                    //adjust for removal of process
+                    save_size = waitstate.size();
+                    std::vector<process>::iterator itr2 = waitstate.begin() + i;
+                    waitstate.erase(itr2);
+
+                    printf("time %dms: Process %c completed I/O; added to ready queue %s\n", time, toupper(char(curr.getpID())), printQueue(queue).c_str());
+                }
+                else
+                {
+                    i++;
+                }
+            }
+            if (temp_list.size() > 0)
+            {
+                //sort based on pid and add to ready queue
+                std::sort(temp_list.begin(), temp_list.end());
+                for (int i = 0; i < temp_list.size(); i++)
+                {
+                    queue.push_back(temp_list[i]);
+                }
+            }
+        }
+
+        /*check is process is done running on CPU*/
+        if (aCPU.checkstate() == true)
+        {
+
+            /*something is running on the CPU, check if it is finished*/
+            process current = aCPU.getProcess();
+            
+            current.setBurst(current.getAllBursts()[0]);
+            /*check if the CPU burst of the process is finished*/
+            /*OR if the time slice is expire*/
+            
+            if ((current.getCurrent().get_CPUtime() + aCPU.getTime() + int(t_cs / 2) == time)|| (time_switch == time))
+
+            {
+                
+                /*case 1 - process finished before the time slice expired OR time slice expired but queue is empty*/
+                if((current.getCurrent().get_CPUtime() + aCPU.getTime() + int(t_cs / 2) == time)){
+                    
+                    aCPU.setState(false);
+                    current.removeBurst(current.getCurrent());
+                    int check_finished = current.getRemainingBursts();
+                    if (check_finished == 0)
+                    {
+
+                        /*all CPU bursts completed, update number of completed processes*/
+                        completed += 1;
+                        completed_processes.push_back(current);
+
+                        aCPU.setProcess(i);
+                        aCPU.updateContext(t_cs / 2);
+                        printf("time %dms: Process %c terminated %s\n", time, toupper(char(current.getpID())), printQueue(queue).c_str());
+
+                        if (completed == total_processes)
+                        {
+                            //print stats: CHANGE TO PRINT TO FILE
+                            time += t_cs / 2;
+
+                            context_switch += 1;
+                            double avg_wait = avg_wait_time(completed_processes);
+                            double avg_turnaround = avg_CPU_burst_time + avg_wait + t_cs;
+                            double CPU_active = (aCPU.getActive() / time) * 100;
+                            printf("time %dms: Simulator ended for RR %s\n", int(time), printQueue(queue).c_str());
+                            printf("Algorithm FCFS\n");
+                            printf("-- average CPU burst time: %.3f ms\n", avg_CPU_burst_time);
+                            printf("-- average wait time: %.3f ms\n", avg_wait);
+                            printf("-- average turnaround time: %.3f ms\n", avg_turnaround);
+                            printf("-- total number of context switches: %d\n", context_switch);
+                            printf("-- total number of preemptions: %d\n", preemptions);
+                            printf("-- CPU utilization: %.3f%%\n", CPU_active);
+
+                            return;
+                        }
+                    }
+                    else
+                    {
+                        /*CPU burst finished, remove from burst list and switch waiting on IO*/
+                        printf("time %dms: Process %c completed a CPU burst; %d bursts to go %s\n", time, toupper(char(current.getpID())), check_finished, printQueue(queue).c_str());
+
+                        waitstate.push_back(current);
+                        //printf("incpu: %f\n", current.getCurrent().get_IOtime());
+                        double switch_time = t_cs / 2;
+                        double waiting_time = time + current.getCurrent().get_IOtime() + switch_time;
+                        //printf("%d, %f, %f\n", time, current.getCurrent().get_IOtime(), switch_time);
+                        aCPU.set_prev(current.getCurrent());
+                        //current.removeBurst(current.getCurrent());
+                        waitstate.back().setWaitTime(waiting_time);
+                        //aCPU.setTime(time + t_cs/2);
+                        //aCPU.set_waiting(waiting_time);
+                        aCPU.updateContext(t_cs / 2);
+
+                        printf("time %dms: Process %c switching out of CPU; will block on I/O until time %dms %s\n", int(time), toupper(char(current.getpID())), int(waiting_time), printQueue(queue).c_str());
+                        
+                    }
+                    context_switch += 1;
+                }
+                /*case 2 - time slice expired, preempt process*/
+                else if((time_switch == time) && (queue.size() != 0)){
+                    //update no. of preemptions
+                    preemptions += 1;
+                    aCPU.setState(false);
+                    //not working
+                    
+                    aCPU.setProcess(i);
+                    //preempt process
+                    printf("%dms: Time slice expired; process %c preempted with %d to go %s\n", time, toupper(char(current.getpID())), int(current.getCurrent().get_CPUtime() - t_slice), printQueue(queue).c_str());
+                    //update CPU context wait time, since process is preempted include time to switch out
+                    //process and time to switch in new process
+                    queue.push_back(current);
+                    aCPU.updateContext(t_cs/2);
+                    //update current process remaining CPU time -- NOT WORKING
+                    queue.back().getCurrent().update_CPU(t_slice);
+
+                    printf("new:%f\n",queue.back().getCurrent().get_CPUtime());
+                }
+                else if((time_switch == time) && (queue.size() == 0)){
+                    //no preemption even though time slice expired
+                    //QUESTION: reset time slice here?
+                    
+                    printf("%dms: Time slice expired; no preemption because ready queue is empty %s\n", time, printQueue(queue).c_str());
+                   
+                }
+                
+            }
+        }
+        //printf("%s\n", printQueue(queue).c_str());
+        /*check if ready queue is not empty, and if CPU is available*/
+        //if (queue.size() != 0)
+        //{
+
+        //printf("CPU: %f\n",aCPU.getContext());
+        if (aCPU.checkstate() == false && aCPU.getContext() == 0 && queue.size() != 0)
+        {
+            /*start running process*/
+
+            /*set CPU state and update process running on CPU*/
+            aCPU.setState(true);
+
+            aCPU.setProcess(queue.front());
+
+            aCPU.setTime(time);
+
+            process nowrunning = queue.front();
+
+            queue.erase(queue.begin());
+
+            aCPU.updateActive(nowrunning.getAllBursts()[0].get_CPUtime());
+
+            aCPU.updateContext(t_cs / 2);
+            printf("time %dms: Process %c started using the CPU for %dms burst %s\n", int(time + t_cs / 2), toupper(char(nowrunning.getpID())), int(nowrunning.getAllBursts()[0].get_CPUtime()), printQueue(queue).c_str());
+            /*set time slice*/
+            time_switch = t_slice + (time + t_cs/2);
+            
+        }
+        //update context switch var
+        else if (aCPU.getContext() > 0)
+        {
+            aCPU.updateContext(-1);
+        }
+
+        //update wait times, CPU is not available processes waiting
+        for (int k = 0; k < queue.size(); k++)
+        {
+            queue[k].updateWaitTime();
+        }
+
+        //increment time
+        time += 1;
+    }
+
+}
 //Skipping preemptions in RR
 
 double next_exp(double lambda, double upper_bound)
@@ -519,6 +744,7 @@ std::vector<process> create_processes(int n, int seed, double lambda, double upp
         for (int j = 0; j < num_bursts; j++)
         {
             double CPU_burst_time = ceil(next_exp(lambda, upper_bound));
+            printf("%c, %f\n", char(alphabet[i]), CPU_burst_time);
             double IO_time;
             if (j == num_bursts - 1)
             {
@@ -576,8 +802,8 @@ int main(int argc, char *argv[])
         std::cout<<"in the vector pID is: "<<processes[i].getState()<<"\n";
     }*/
 
-    FCFS(processes, t_cs);
-    SRT(processes, t_cs, tau_initial);
-
+    //FCFS(processes, t_cs);
+    //SRT(processes, t_cs, tau_initial);
+    RR(processes, t_cs, t_slice);
     return 0;
 }
