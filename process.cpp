@@ -1,6 +1,6 @@
 #include "process.h"
 
-process::process(int aState, int aPid, double aTime, std::vector<cpuBurst> aBurstList, int atotal_bursts, int abursts_completed, int atotal_time, int aremaining_time)
+process::process(int aState, int aPid, double aTime, std::vector<cpuBurst> aBurstList, int atotal_bursts, int abursts_completed, int atotal_time, int aremaining_time, int atau)
 
 {
     // process id, arrival time, cpu bursts
@@ -16,6 +16,7 @@ process::process(int aState, int aPid, double aTime, std::vector<cpuBurst> aBurs
     total_time = atotal_time;
     wait_queue = 0;
     wait_time = 0;
+    tau = atau;
     
 }
 process::process()
@@ -48,6 +49,7 @@ process::process(const process &i)
     cpuBurst currently_on = i.currently_on;
     wait_queue = i.wait_queue;
     wait_time = i.wait_time;
+    tau = i.tau;
     
 }
 
