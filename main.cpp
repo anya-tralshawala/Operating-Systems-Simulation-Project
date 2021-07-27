@@ -6,7 +6,7 @@
 #include <iomanip>
 #include <string>
 #include <algorithm>
-//#include <bits/stdc++.h>
+#include <bits/stdc++.h>
 #include "cpu.h"
 
 std::string printQueue(std::vector<process> queue)
@@ -147,7 +147,7 @@ void FCFS(std::vector<process> processes, double t_cs)
                 }
             }
         }
-        
+
         /*check is process is done running on CPU*/
         if (aCPU.checkstate() == true)
         {
@@ -267,7 +267,7 @@ void FCFS(std::vector<process> processes, double t_cs)
 //Shortest job first (SJF)
 
 //Shortest remaining time (SRT)
-void SRT(std::vector<process> processes, double t_cs)
+void SRT(std::vector<process> processes, double t_cs, int tau_initial)
 {
     int total_processes = processes.size();
     int completed = 0;
@@ -311,37 +311,43 @@ void SRT(std::vector<process> processes, double t_cs)
                 {
                     //process completed IO burst, add front of the ready queue
                     queue.insert(queue.begin(), curr);
-                    // preemptions ++;
+                    preemptions++;
                     std::vector<process>::iterator itr2 = waitstate.begin() + i;
                     waitstate.erase(itr2);
                     printf("time %dms: Process %c completed I/O; added to ready queue %s\n", time, toupper(char(curr.getpID())), printQueue(queue).c_str());
                 }
-                // if (aCPU.get_waiting() > time)
-                // {
-                //     //process completed IO burst, add back to the ready queue
-                //     queue.push_back(curr);
-                //     std::vector<process>::iterator itr3 = waitstate.begin() + i;
-                //     waitstate.erase(itr3);
-                //     printf("time %dms: Process %c completed I/O; added to ready queue %s\n", time, toupper(char(curr.getpID())), printQueue(queue).c_str());
-                // }
+                if (aCPU.get_waiting() >= time)
+                {
+                    //process completed IO burst, add back to the ready queue
+                    queue.push_back(curr);
+                    std::vector<process>::iterator itr3 = waitstate.begin() + i;
+                    waitstate.erase(itr3);
+                    printf("time %dms: Process %c (tau %dms) completed I/O; added to ready queue %s\n", time, toupper(char(curr.getpID())), tau_initial, printQueue(queue).c_str());
+                }
             }
         }
         /*check if processes arrive*/
         for (int i = 0; i < total_processes; i++)
         {
-            /*Find process with minimum remaining time in the queue*/
-            if (processes[i].getRemainingTime() < min_time)
-            {
-                min_time = processes[i].getRemainingTime();
-                shortest = i;
-                check = true;
+            // /*Find process with minimum remaining time in the queue*/
+            // if (processes[i].getRemainingTime() < min_time)
+            // {
+            //     min_time = processes[i].getRemainingTime();
+            //     shortest = i;
+            //     check = true;
 
-                // insert in the front of queue
-                queue.insert(queue.begin(), processes[i]);
+            //     // insert in the front of queue
+            //     queue.insert(queue.begin(), processes[i]);
+            //     printf("time %dms: Process %c arrived; added to ready queue %s\n", time, toupper(char(processes[i].getpID())), printQueue(queue).c_str());
+            // }
+            // // decrease remaining time
+            // min_time--;
+
+            if (processes[i].getArrivialTime() == time)
+            {
+                queue.push_back(processes[i]);
                 printf("time %dms: Process %c arrived; added to ready queue %s\n", time, toupper(char(processes[i].getpID())), printQueue(queue).c_str());
             }
-            // decrease remaining time
-            min_time--;
         }
 
         if (aCPU.checkstate() == true)
@@ -393,12 +399,12 @@ void SRT(std::vector<process> processes, double t_cs)
                 else
                 {
                     /*CPU burst finished, remove from burst list and switch waiting on IO*/
-                    printf("time %dms: Process %c completed a CPU burst; %d bursts to go %s\n", time, toupper(char(current.getpID())), check_finished, printQueue(queue).c_str());
+                    printf("time %dms: Process %c (tau %dms) completed a CPU burst; %d bursts to go %s\n", time, toupper(char(current.getpID())), tau_initial, check_finished, printQueue(queue).c_str());
 
                     waitstate.push_back(current);
                     double switch_time = t_cs / 2;
                     double waiting_time = time + current.getCurrent().get_IOtime() + switch_time;
-                    
+
                     aCPU.set_prev(current.getCurrent());
                     current.removeBurst(current.getCurrent());
                     aCPU.set_waiting(waiting_time);
@@ -427,7 +433,7 @@ void SRT(std::vector<process> processes, double t_cs)
                 queue.erase(queue.begin());
 
                 aCPU.updateActive(nowrunning.getAllBursts()[0].get_CPUtime());
-                printf("time %dms: Process %c started using the CPU for %dms burst %s\n", int(time + t_cs / 2), toupper(char(nowrunning.getpID())), int(nowrunning.getAllBursts()[0].get_CPUtime()), printQueue(queue).c_str());
+                printf("time %dms: Process %c (tau %dms) started using the CPU for %dms burst %s\n", int(time + t_cs / 2), toupper(char(nowrunning.getpID())), tau_initial, int(nowrunning.getAllBursts()[0].get_CPUtime()), printQueue(queue).c_str());
             }
 
             //update wait times, CPU is not available processes waiting
@@ -491,7 +497,7 @@ std::vector<process> create_processes(int n, int seed, double lambda, double upp
             {
                 IO_time = ceil(next_exp(lambda, upper_bound)) * 10;
             }
-            
+
             cpuBurst current_burst = cpuBurst(CPU_burst_time, IO_time);
 
             aBurstList.push_back(current_burst);
@@ -520,13 +526,14 @@ int main(int argc, char *argv[])
     double alpha = std::stod(argv[6]);
     double t_slice = std::stod(argv[7]);
 
-    double tau_initial = 1/lambda;
+    double tau_initial = 1 / lambda;
 
     // create vector of processes
     srand48(seed);
     std::vector<process> processes = create_processes(n, seed, lambda, upper_bound);
 
-    for(int i = 0; i<processes.size(); i++){
+    for (int i = 0; i < processes.size(); i++)
+    {
         printf("Process %c (arrival time %d ms) %d CPU bursts (tau %dms)\n", toupper(char(processes[i].getpID())), processes[i].getArrivialTime(), processes[i].getTotalBursts(), int(tau_initial));
     }
     printf("\n");
@@ -539,7 +546,7 @@ int main(int argc, char *argv[])
     }*/
 
     FCFS(processes, t_cs);
-    //SRT(processes, t_cs);
+    SRT(processes, t_cs, tau_initial);
 
     return 0;
 }
