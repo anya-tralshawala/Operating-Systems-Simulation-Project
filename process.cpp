@@ -15,6 +15,8 @@ process::process(int aState, int aPid, double aTime, std::vector<cpuBurst> aBurs
     remaining_time = aremaining_time;
     total_time = atotal_time;
     wait_queue = 0;
+    wait_time = 0;
+    
 }
 process::process()
 {
@@ -29,6 +31,8 @@ process::process()
     remaining_time = 0;
     total_time = 0;
     wait_queue = 0;
+    wait_time = 0;
+    
 }
 
 process::process(const process &i)
@@ -46,6 +50,7 @@ process::process(const process &i)
     wait_time = i.wait_time;
     
 }
+
 
 void process::removeBurst(cpuBurst removethis)
 {

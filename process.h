@@ -8,7 +8,7 @@ public:
     process(int aState, int aPid, double aTime, std::vector<cpuBurst> aBurstList, int atotal_bursts, int abursts_completed, int atotal_time, int aremaining_time);
     process();
     process(const process &i);
-
+    int pid;
     // ACCESSORS
     int getState() { return state; }
     int getpID() { return pid; }
@@ -22,6 +22,7 @@ public:
     std::vector<cpuBurst> getAllBursts(){return all_bursts;}
     double getTurnaroundTime(){return turnaround_time;}
     double getWaitTime(){return wait_time;}
+    bool operator< (const process &other) const{return pid < other.pid;}
     // cpuBurst cpuBurst::getBurstAt(int i){return all_bursts[i]}
 
     // MODIFIERS
@@ -31,14 +32,14 @@ public:
     void removeBurst(cpuBurst removethis);
     void setBurst(cpuBurst setthis) { currently_on = setthis; }
     void updateWaitTime() { wait_queue += 1; }
-
+    
     //private member variables
 private:
     std::vector<cpuBurst> all_bursts;
     cpuBurst currently_on;
     int state;
     double arrival_time;
-    int pid;
+    
     double wait_time;
     double turnaround_time;
     double completion_time;
@@ -47,6 +48,8 @@ private:
     int remaining_time;
     int total_time;
     double wait_queue;
+    
 };
 //bools we will use in sorting
 bool less_names();
+

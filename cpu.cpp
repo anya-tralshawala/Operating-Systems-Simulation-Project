@@ -9,6 +9,7 @@ cpu::cpu(process i)
     prev_burst = cpuBurst();
     waiting_time = 0;
     time_active = 0;
+    context_time = 0;
 }
 
 void cpu::setProcess(process i)

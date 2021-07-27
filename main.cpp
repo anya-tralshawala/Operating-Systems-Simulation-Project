@@ -6,7 +6,7 @@
 #include <iomanip>
 #include <string>
 #include <algorithm>
-#include <bits/stdc++.h>
+//#include <bits/stdc++.h>
 #include "cpu.h"
 
 std::string printQueue(std::vector<process> queue)
@@ -37,21 +37,21 @@ double avg_burst(std::vector<process> processes)
 {
     //get average CPU burst time of all processes in vector
     double sum = 0;
-    double size = processes.size();
+    double size = 0;
     double avg = 0;
-    for (int i = 0; i < size; i++)
+    for (int i = 0; i < processes.size(); i++)
     {
         //loop through all processes
         std::vector<cpuBurst> current_bursts = processes[i].getAllBursts();
         double burst_sum = 0;
-        double burst_avg = 0;
+        
         for (int j = 0; j < current_bursts.size(); j++)
         {
             //loop through all bursts
             burst_sum += current_bursts[j].get_CPUtime();
         }
-        burst_avg = burst_sum / current_bursts.size();
-        sum += burst_avg;
+        size += current_bursts.size();
+        sum += burst_sum;
     }
     avg = sum / size;
     return avg;
@@ -60,11 +60,13 @@ double avg_burst(std::vector<process> processes)
 double avg_wait_time(std::vector<process> completed_processes)
 {
     double sum = 0;
-    double size = completed_processes.size();
-    for (int i = 0; i < size; i++)
+    double size = 0;
+    for (int i = 0; i < completed_processes.size(); i++)
     {
         sum += completed_processes[i].getWait();
+        size += completed_processes[i].getTotalBursts();
     }
+    
     return sum / size;
 }
 
@@ -100,15 +102,19 @@ void FCFS(std::vector<process> processes, double t_cs)
             if (processes[i].getArrivialTime() == time)
             {
                 queue.push_back(processes[i]);
+                
                 printf("time %dms: Process %c arrived; added to ready queue %s\n", time, toupper(char(processes[i].getpID())), printQueue(queue).c_str());
             }
         }
         /*check if waitIO queue has anything that finished*/
         if (waitstate.size() != 0)
         {
-
+            
             //loop through, check if any IO has finished
-            for (int i = 0; i < waitstate.size(); i++)
+            int save_size = waitstate.size();
+            int i = 0;
+            std::vector<process> temp_list;
+            while(i < waitstate.size())
             {
 
                 process curr = waitstate[i];
@@ -117,12 +123,27 @@ void FCFS(std::vector<process> processes, double t_cs)
                 //printf("curr: %f\n", curr.getWaitTime());
                 //printf("time: %d\n", time);
                 if(int(curr.getWaitTime()) == time){
+                    
                     curr.setWaitTime(-99);
                     //process completed IO burst, add back to the ready queue
-                    queue.push_back(curr);
+                    temp_list.push_back(curr);
+                    //adjust for removal of process 
+                    save_size = waitstate.size();
                     std::vector<process>::iterator itr2 = waitstate.begin() + i;
                     waitstate.erase(itr2);
+                    
+                    
                     printf("time %dms: Process %c completed I/O; added to ready queue %s\n", time, toupper(char(curr.getpID())), printQueue(queue).c_str());
+                }
+                else{
+                    i++;
+                }
+            }
+            if(temp_list.size() > 0){
+                //sort based on pid and add to ready queue
+                std::sort(temp_list.begin(), temp_list.end());
+                for(int i = 0; i<temp_list.size(); i++){
+                    queue.push_back(temp_list[i]);
                 }
             }
         }
@@ -137,8 +158,9 @@ void FCFS(std::vector<process> processes, double t_cs)
 
             /*check if the CPU burst of the process is finished*/
             //ISSUE: time needs to be compared to CPUtime + original time it started
-            if (current.getCurrent().get_CPUtime() + aCPU.getTime() == time)
-
+            //if(current.getCurrent().get_CPUtime() + aCPU.getTime() == time && aCPU.getContext() == 0)
+            if (current.getCurrent().get_CPUtime() + aCPU.getTime() + int(t_cs/2) == time)
+            
             {
 
                 aCPU.setState(false);
@@ -152,7 +174,7 @@ void FCFS(std::vector<process> processes, double t_cs)
                     completed_processes.push_back(current);
 
                     aCPU.setProcess(i);
-
+                    aCPU.updateContext(t_cs/2);
                     printf("time %dms: Process %c terminated %s\n", time, toupper(char(current.getpID())), printQueue(queue).c_str());
 
                     if (completed == total_processes)
@@ -164,6 +186,7 @@ void FCFS(std::vector<process> processes, double t_cs)
                         double avg_wait = avg_wait_time(completed_processes);
                         double avg_turnaround = avg_CPU_burst_time + avg_wait + t_cs;
                         double CPU_active = (aCPU.getActive() / time) * 100;
+                        printf("time %dms: Simulator ended for FCFS %s\n", int(time), printQueue(queue).c_str());
                         printf("Algorithm FCFS\n");
                         printf("-- average CPU burst time: %.3f ms\n", avg_CPU_burst_time);
                         printf("-- average wait time: %.3f ms\n", avg_wait);
@@ -186,50 +209,60 @@ void FCFS(std::vector<process> processes, double t_cs)
                     double waiting_time = time + current.getCurrent().get_IOtime() + switch_time;
                     //printf("%d, %f, %f\n", time, current.getCurrent().get_IOtime(), switch_time);
                     aCPU.set_prev(current.getCurrent());
-                    current.removeBurst(current.getCurrent());
+                    //current.removeBurst(current.getCurrent());
                     waitstate.back().setWaitTime(waiting_time);
-                    
+                    //aCPU.setTime(time + t_cs/2);
                     //aCPU.set_waiting(waiting_time);
-                    
-                    printf("time %dms: Process %c switching out of CPU; will block on I/O until time %dms %s\n", time, toupper(char(current.getpID())), int(waiting_time), printQueue(queue).c_str());
+                    aCPU.updateContext(t_cs/2);
+                    printf("time %dms: Process %c switching out of CPU; will block on I/O until time %dms %s\n", int(time), toupper(char(current.getpID())), int(waiting_time), printQueue(queue).c_str());
                 }
                 context_switch += 1;
             }
         }
         //printf("%s\n", printQueue(queue).c_str());
         /*check if ready queue is not empty, and if CPU is available*/
-        if (queue.size() != 0)
-        {
+        //if (queue.size() != 0)
+        //{
             
-            if (aCPU.checkstate() == false)
-            {
-                /*start running process*/
+        //printf("CPU: %f\n",aCPU.getContext());
+        if (aCPU.checkstate() == false && aCPU.getContext() == 0 && queue.size() !=0)
+        {
+            /*start running process*/
 
-                /*set CPU state and update process running on CPU*/
-                aCPU.setState(true);
+            /*set CPU state and update process running on CPU*/
+            aCPU.setState(true);
 
-                aCPU.setProcess(queue.front());
+            aCPU.setProcess(queue.front());
                 
-                aCPU.setTime(time + t_cs / 2);
-                process nowrunning = queue.front();
+            aCPU.setTime(time);
+                
+            process nowrunning = queue.front();
 
-                queue.erase(queue.begin());
+            queue.erase(queue.begin());
 
-                aCPU.updateActive(nowrunning.getAllBursts()[0].get_CPUtime());
-                printf("time %dms: Process %c started using the CPU for %dms burst %s\n", int(time + t_cs / 2), toupper(char(nowrunning.getpID())), int(nowrunning.getAllBursts()[0].get_CPUtime()), printQueue(queue).c_str());
-            }
+            aCPU.updateActive(nowrunning.getAllBursts()[0].get_CPUtime());
 
-            //update wait times, CPU is not available processes waiting
-            for (int k = 0; k < queue.size(); k++)
-            {
-                queue[k].updateWaitTime();
-            }
+            aCPU.updateContext(t_cs/2);
+            printf("time %dms: Process %c started using the CPU for %dms burst %s\n", int(time + t_cs/2), toupper(char(nowrunning.getpID())), int(nowrunning.getAllBursts()[0].get_CPUtime()), printQueue(queue).c_str());
         }
-
+            //update context switch var
+        else if(aCPU.getContext() > 0){
+            aCPU.updateContext(-1);
+        }
+            
+        //update wait times, CPU is not available processes waiting
+        for (int k = 0; k < queue.size(); k++)
+        {
+            queue[k].updateWaitTime();
+                
+        }
+ 
+        //}
+       
         /*increment time variable*/
         time += 1;
     }
-    printf("time %dms: Simulator ended for FCFS %s\n", int(time), printQueue(queue).c_str());
+    
 }
 //Shortest job first (SJF)
 
@@ -506,7 +539,7 @@ int main(int argc, char *argv[])
     }*/
 
     FCFS(processes, t_cs);
-    SRT(processes, t_cs);
+    //SRT(processes, t_cs);
 
     return 0;
 }

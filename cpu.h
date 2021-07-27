@@ -17,6 +17,8 @@ public:
     double get_waiting() { return waiting_time; }
     void updateActive(double time) { time_active += time; }
     double getActive() { return time_active; }
+    void updateContext(double time){context_time += time;}
+    double getContext(){return context_time;}
 
 private:
     /* data */
@@ -26,4 +28,5 @@ private:
     cpuBurst prev_burst;
     double waiting_time;
     double time_active;
+    double context_time;
 };
