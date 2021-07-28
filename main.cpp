@@ -6,7 +6,7 @@
 #include <iomanip>
 #include <string>
 #include <algorithm>
-//#include <bits/stdc++.h>
+#include <bits/stdc++.h>
 #include "cpu.h"
 
 std::string printQueue(std::vector<process> queue)
@@ -347,11 +347,9 @@ void SRT(std::vector<process> processes, double t_cs, double alpha, int tau_init
                 //     printf("time %dms: Recalculated tau from %dms to %dms for process %s\n", time, tau_before, tau_added, printQueue(queue).c_str());
                 //     tau_added = tau_before;
                 // }
-
                 curr.setBurst(aCPU.get_prev());
                 if (int(curr.getWaitTime()) == time)
                 {
-
                     curr.setWaitTime(-99);
                     //process completed IO burst, add back to the ready queue
                     temp_list.push_back(curr);
@@ -362,7 +360,6 @@ void SRT(std::vector<process> processes, double t_cs, double alpha, int tau_init
 
                     printf("time %dms: Process %c (tau %dms) completed I/O; added to ready queue %s\n", time, toupper(char(curr.getpID())), tau_initial, printQueue(queue).c_str());
                 }
-
                 else
                 {
                     i++;
@@ -382,6 +379,7 @@ void SRT(std::vector<process> processes, double t_cs, double alpha, int tau_init
                         // insert in the front of queue
                         queue.insert(queue.begin(), temp_list[i]);
                     }
+
                     else
                     {
                         queue.push_back(temp_list[i]);
@@ -482,8 +480,11 @@ void SRT(std::vector<process> processes, double t_cs, double alpha, int tau_init
         time += 1;
     }
 }
+
 //Round robin (RR)
-void RR(std::vector<process> processes, double t_cs, double t_slice){
+void RR(std::vector<process> processes, double t_cs, double t_slice, int tau_inital)
+{
+
     int total_processes = processes.size();
     int completed = 0;
     int time = 0;
@@ -495,7 +496,7 @@ void RR(std::vector<process> processes, double t_cs, double t_slice){
     std::vector<cpuBurst> emptylist;
     std::vector<process> completed_processes;
     std::vector<process> copy_process = processes;
-    process i = process(0, 0, 0, emptylist, 0, 0, 0, 0);
+    process i = process(0, 0, 0, emptylist, 0, 0, 0, 0, tau_inital);
     double time_switch = t_slice;
     cpu aCPU = cpu(i);
 
@@ -562,27 +563,23 @@ void RR(std::vector<process> processes, double t_cs, double t_slice){
         /*check is process is done running on CPU*/
         if (aCPU.checkstate() == true)
         {
-
             /*something is running on the CPU, check if it is finished*/
             process current = aCPU.getProcess();
-            
             current.setBurst(current.getAllBursts()[0]);
             /*check if the CPU burst of the process is finished*/
             /*OR if the time slice is expire*/
-            
-            if ((current.getCurrent().get_CPUtime() + aCPU.getTime() + int(t_cs / 2) == time)|| (time_switch == time))
 
+            if ((current.getCurrent().get_CPUtime() + aCPU.getTime() + int(t_cs / 2) == time) || (time_switch == time))
             {
-                
                 /*case 1 - process finished before the time slice expired OR time slice expired but queue is empty*/
-                if((current.getCurrent().get_CPUtime() + aCPU.getTime() + int(t_cs / 2) == time)){
-                    
+                if ((current.getCurrent().get_CPUtime() + aCPU.getTime() + int(t_cs / 2) == time))
+                {
+
                     aCPU.setState(false);
                     current.removeBurst(current.getCurrent());
                     int check_finished = current.getRemainingBursts();
                     if (check_finished == 0)
                     {
-
                         /*all CPU bursts completed, update number of completed processes*/
                         completed += 1;
                         completed_processes.push_back(current);
@@ -601,7 +598,7 @@ void RR(std::vector<process> processes, double t_cs, double t_slice){
                             double avg_turnaround = avg_CPU_burst_time + avg_wait + t_cs;
                             double CPU_active = (aCPU.getActive() / time) * 100;
                             printf("time %dms: Simulator ended for RR %s\n", int(time), printQueue(queue).c_str());
-                            printf("Algorithm FCFS\n");
+                            printf("Algorithm RR\n");
                             printf("-- average CPU burst time: %.3f ms\n", avg_CPU_burst_time);
                             printf("-- average wait time: %.3f ms\n", avg_wait);
                             printf("-- average turnaround time: %.3f ms\n", avg_turnaround);
@@ -630,37 +627,36 @@ void RR(std::vector<process> processes, double t_cs, double t_slice){
                         aCPU.updateContext(t_cs / 2);
 
                         printf("time %dms: Process %c switching out of CPU; will block on I/O until time %dms %s\n", int(time), toupper(char(current.getpID())), int(waiting_time), printQueue(queue).c_str());
-                        
                     }
                     context_switch += 1;
                 }
                 /*case 2 - time slice expired, preempt process*/
-                else if((time_switch == time) && (queue.size() != 0)){
+                else if ((time_switch == time) && (queue.size() != 0))
+                {
                     //update no. of preemptions
                     preemptions += 1;
                     aCPU.setState(false);
                     //not working
-                    
+
                     aCPU.setProcess(i);
                     //preempt process
                     printf("%dms: Time slice expired; process %c preempted with %d to go %s\n", time, toupper(char(current.getpID())), int(current.getCurrent().get_CPUtime() - t_slice), printQueue(queue).c_str());
                     //update CPU context wait time, since process is preempted include time to switch out
                     //process and time to switch in new process
                     queue.push_back(current);
-                    aCPU.updateContext(t_cs/2);
+                    aCPU.updateContext(t_cs / 2);
                     //update current process remaining CPU time -- NOT WORKING
-                    queue.back().getCurrent().update_CPU(t_slice);
+                    queue.back().getCurrent().update_CPU(2);
 
-                    printf("new:%f\n",queue.back().getCurrent().get_CPUtime());
+                    printf("new:%f\n", queue.back().getCurrent().get_CPUtime());
                 }
-                else if((time_switch == time) && (queue.size() == 0)){
+                else if ((time_switch == time) && (queue.size() == 0))
+                {
                     //no preemption even though time slice expired
                     //QUESTION: reset time slice here?
-                    
+
                     printf("%dms: Time slice expired; no preemption because ready queue is empty %s\n", time, printQueue(queue).c_str());
-                   
                 }
-                
             }
         }
         //printf("%s\n", printQueue(queue).c_str());
@@ -689,8 +685,7 @@ void RR(std::vector<process> processes, double t_cs, double t_slice){
             aCPU.updateContext(t_cs / 2);
             printf("time %dms: Process %c started using the CPU for %dms burst %s\n", int(time + t_cs / 2), toupper(char(nowrunning.getpID())), int(nowrunning.getAllBursts()[0].get_CPUtime()), printQueue(queue).c_str());
             /*set time slice*/
-            time_switch = t_slice + (time + t_cs/2);
-            
+            time_switch = t_slice + (time + t_cs / 2);
         }
         //update context switch var
         else if (aCPU.getContext() > 0)
@@ -707,9 +702,7 @@ void RR(std::vector<process> processes, double t_cs, double t_slice){
         //increment time
         time += 1;
     }
-
 }
-//Skipping preemptions in RR
 
 double next_exp(double lambda, double upper_bound)
 {
@@ -805,8 +798,8 @@ int main(int argc, char *argv[])
         std::cout<<"in the vector pID is: "<<processes[i].getState()<<"\n";
     }*/
 
-    FCFS(processes, t_cs, tau_initial);
-    SRT(processes, t_cs, tau_initial, alpha);
-    RR(processes, t_cs, t_slice);
+    // FCFS(processes, t_cs, tau_initial);
+    // SRT(processes, t_cs, alpha, tau_initial);
+    RR(processes, t_cs, t_slice, tau_initial);
     return 0;
 }

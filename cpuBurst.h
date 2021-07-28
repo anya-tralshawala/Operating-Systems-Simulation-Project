@@ -7,7 +7,7 @@ public:
   cpuBurst(const cpuBurst &i);
   double get_CPUtime() { return CPU_time; }
   double get_IOtime() { return IO_time; }
-  void update_CPU(double time) {CPU_time = CPU_time - time;}
+  void update_CPU(double time) {CPU_time = 3;}
   
 private:
   double CPU_time;
