@@ -322,8 +322,8 @@ void SJF(std::vector<process> proc, double t_cs, int n, int tau,int a)
 
 
 
-
-    printf("old tau %d : new tau %d", tau, proc[0].updateTau(a) )
+    proc[0].updateTau(a, 56);
+    printf("old tau %d : new tau %d", tau, int(proc[0].getTau() ));
 
     //while(total_processes != completed)
     //  check if any processes arrived at current time
@@ -335,7 +335,8 @@ void SJF(std::vector<process> proc, double t_cs, int n, int tau,int a)
     //  check if there is a process currently running on the CPU
     //      if yes, check if it is finished running
     //          if it is finished, recalculate the currently running process's tau value
-    //          and add it to the WaitIO queue
+    //          and add it to the WaitIO queue, remove from CPU
+    //  check if     
 }
 
 
