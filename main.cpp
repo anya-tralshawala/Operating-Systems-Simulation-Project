@@ -268,27 +268,6 @@ void FCFS(std::vector<process> processes, double t_cs, int tau_initial)
     }
 }
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 //Shortest job first (SJF)
 
 bool comparision(process a, process b)
@@ -297,7 +276,7 @@ bool comparision(process a, process b)
     return (a.getTotalBursts() < b.getTotalBursts());
 }
 
-void SJF(std::vector<process> proc, double t_cs, int n, int tau,int a)
+void SJF(std::vector<process> proc, double t_cs, int n, int tau, int a)
 {
 
     int completed = 0;
@@ -320,10 +299,8 @@ void SJF(std::vector<process> proc, double t_cs, int n, int tau,int a)
 
     printf("time %dms: Simulator started for SJF %s\n", time, printQueue(queue).c_str());
 
-
-
     proc[0].updateTau(a, 56);
-    printf("old tau %d : new tau %d", tau, int(proc[0].getTau() ));
+    printf("old tau %d : new tau %d", tau, int(proc[0].getTau()));
 
     //while(total_processes != completed)
     //  check if any processes arrived at current time
@@ -336,42 +313,12 @@ void SJF(std::vector<process> proc, double t_cs, int n, int tau,int a)
     //      if yes, check if it is finished running
     //          if it is finished, recalculate the currently running process's tau value
     //          and add it to the WaitIO queue, remove from CPU
-    //  check if     
+    //  check if CPU is free
+    //      if yes, check if ready Q is not empty and put next process on queue on CPU
+    //  otherwise, update the CPU context counter (counts whether CPU is free or not due to context switch ins/outs)
+    //  update each process in queue's wait times 
+    //  increment time variable
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 //Shortest remaining time (SRT)
 void SRT(std::vector<process> processes, double t_cs, double alpha, int tau_initial)
@@ -394,11 +341,6 @@ void SRT(std::vector<process> processes, double t_cs, double alpha, int tau_init
     bool check = false;
     int finish_time;
     process i = process(0, 0, 0, emptylist, 0, 0, cpuBurst(), 0, 0, tau_initial);
-
-    // int tau[2] = {tau_initial, tau_initial};
-    // tau[0] = tau_before;
-    // tau[1] = tau_added;
-
     cpu aCPU = cpu(i);
 
     printf("\n");
@@ -473,19 +415,7 @@ void SRT(std::vector<process> processes, double t_cs, double alpha, int tau_init
                 std::sort(temp_list.begin(), temp_list.end());
                 for (int i = 0; i < temp_list.size(); i++)
                 {
-                    if (temp_list[i].getRemainingTime() < time)
-                    {
-                        time = temp_list[i].getRemainingTime();
-                        shortest = i;
-                        check = true;
-
-                        // insert in the front of queue
-                        queue.insert(queue.begin(), temp_list[i]);
-                    }
-                    else
-                    {
-                        queue.push_back(temp_list[i]);
-                    }
+                    queue.push_back(temp_list[i]);
                 }
             }
         }
@@ -582,34 +512,27 @@ void SRT(std::vector<process> processes, double t_cs, double alpha, int tau_init
         time += 1;
     }
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+    //while(total_processes != completed)
+    //  check if any processes arrived at current time
+    //      check if the CPU is running a process, if yes check if it preempts the currently running process
+    //      preemption occurs when: tau(want to add) < tau(currently_running) - CPU_time_use(currently_running)
+    //      otherwise, add to ready Q
+    //      sort ready Q by tau value
+    //  check if WaitIO queue has any processes on it that finished
+    //      if yes, remove from WaitIO queue check if the CPU is running a process, if yes check if it preempts the currently running process
+    //      preemption occurs when: tau(want to add) < tau(currently_running) - CPU_time_use(currently_running)
+    //      otherwise add to readyQ
+    //      sort ready Q by tau value
+    //  check if there is a process currently running on the CPU
+    //      maybe: update time value of how long process has been using the CPU here?
+    //      if yes, check if it is finished running
+    //          if it is finished, recalculate the currently running process's tau value
+    //          and add it to the WaitIO queue, remove from CPU
+    //  check if CPU is free
+    //      if yes, check if ready Q is not empty and put next process on queue on CPU
+    //  otherwise, update the CPU context counter (counts whether CPU is free or not due to context switch ins/outs)
+    //  update each process in queue's wait times 
+    //  increment time variable
 
 
 
@@ -933,7 +856,7 @@ int main(int argc, char *argv[])
 
     // FCFS(processes, t_cs, tau_initial);
     // SRT(processes, t_cs, alpha, tau_initial);
-    SJF(processes, t_cs, n, tau_initial,alpha);
+    SJF(processes, t_cs, n, tau_initial, alpha);
     // RR(processes, t_cs, t_slice, tau_initial);
     return 0;
 }
