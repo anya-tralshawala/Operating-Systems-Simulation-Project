@@ -18,6 +18,7 @@ public:
     int getRemainingBursts() { return all_bursts.size(); }
     int getRemainingTime() { return total_time - remaining_time; }
     int getTau() { return tau; }
+    int CPU_use_time(){return total_time;}
     cpuBurst &getCurrent();
     double getWait() { return wait_queue; }
     std::vector<cpuBurst> &getAllBursts() { return all_bursts; }
@@ -55,6 +56,7 @@ private:
     int total_time;
     double wait_queue;
     int tau;
+    int cpu_time;
 };
 //bools we will use in sorting
 bool less_names();

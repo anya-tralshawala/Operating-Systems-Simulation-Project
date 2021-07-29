@@ -20,8 +20,7 @@ process::process(int aState, int aPid, double aTime, std::vector<cpuBurst> aBurs
     turnaround_time = 0;
     completion_time = 0;
     num_switches = 0;
-
-    
+    cpu_time = 0;
 }
 process::process()
 {
@@ -40,20 +39,19 @@ process::process()
     turnaround_time = 0;
     completion_time = 0;
     num_switches = 0;
-
-    
+    cpu_time = 0;
 }
 
-cpuBurst& process::getCurrent(){
-   // printf("---->io in getCurrent:%f\n", currently_on.get_IOtime());
-  //  printf("---->check cpu in getCurrent:%f\n", currently_on.get_CPUtime());
+cpuBurst &process::getCurrent()
+{
+    // printf("---->io in getCurrent:%f\n", currently_on.get_IOtime());
+    //  printf("---->check cpu in getCurrent:%f\n", currently_on.get_CPUtime());
     return currently_on;
 }
 
 process::process(const process &i)
 {
     all_bursts = i.all_bursts;
-    
 
     state = i.state;
     arrival_time = i.arrival_time;
@@ -67,18 +65,11 @@ process::process(const process &i)
     wait_queue = i.wait_queue;
     wait_time = i.wait_time;
     tau = i.tau;
-    
     num_switches = i.num_switches;
     turnaround_time = i.turnaround_time;
     completion_time = i.completion_time;
-   
-   
-  
-   
- 
-    
+    cpu_time = i.cpu_time;
 }
-
 
 void process::removeBurst(cpuBurst removethis)
 {
