@@ -66,13 +66,6 @@ time 9587ms: Process A completed I/O; added to ready queue [Q A]
 time 9589ms: Process A started using the CPU for 197ms burst [Q empty]
 time 9786ms: Process A terminated [Q empty]
 time 9788ms: Simulator ended for FCFS [Q empty]
-Algorithm FCFS
--- average CPU burst time: 80.312 ms
--- average wait time: 0.000 ms
--- average turnaround time: 84.312 ms
--- total number of context switches: 16
--- total number of preemptions: 0
--- CPU utilization: 13.128%
 
 time 0ms: Simulator started for SJF [Q empty]
 time 9ms: Process A arrived; added to ready queue [Q A]
@@ -154,13 +147,6 @@ time 9587ms: Process A (tau 128ms) completed I/O; added to ready queue [Q A]
 time 9589ms: Process A (tau 128ms) started using the CPU for 197ms burst [Q empty]
 time 9786ms: Process A terminated [Q empty]
 time 9788ms: Simulator ended for SJF [Q empty]
-Algorithm SJF
--- average CPU burst time: 80.312 ms
--- average wait time: 0.000 ms
--- average turnaround time: 84.312 ms
--- total number of context switches: 16
--- total number of preemptions: 0
--- CPU utilization: 13.128%
 
 time 0ms: Simulator started for SRT [Q empty]
 time 9ms: Process A (tau 100ms) arrived; added to ready queue [Q A]
@@ -242,13 +228,6 @@ time 9587ms: Process A (tau 128ms) completed I/O; added to ready queue [Q A]
 time 9589ms: Process A (tau 128ms) started using the CPU for 197ms burst [Q empty]
 time 9786ms: Process A terminated [Q empty]
 time 9788ms: Simulator ended for SRT [Q empty]
-Algorithm SRT
--- average CPU burst time: 80.312 ms
--- average wait time: 0.000 ms
--- average turnaround time: 84.312 ms
--- total number of context switches: 16
--- total number of preemptions: 0
--- CPU utilization: 13.128%
 time 0ms: Simulator started for RR [Q empty]
 time 9ms: Process A arrived; added to ready queue [Q A]
 time 11ms: Process A started using the CPU for 56ms burst [Q empty]
@@ -317,10 +296,3 @@ time 9589ms: Process A started using the CPU for 197ms burst [Q empty]
 time 9717ms: Time slice expired; no preemption because ready queue is empty [Q empty]
 time 9786ms: Process A terminated [Q empty]
 time 9788ms: Simulator ended for RR [Q empty]
-Algorithm RR
--- average CPU burst time: 80.312 ms
--- average wait time: 0.000 ms
--- average turnaround time: 84.312 ms
--- total number of context switches: 16
--- total number of preemptions: 0
--- CPU utilization: 13.128%

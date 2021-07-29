@@ -7,6 +7,8 @@
 #include <string>
 #include <algorithm>
 #include "cpu.h"
+#include <iostream>
+#include <fstream>
 
 std::string printQueue(std::vector<process> queue)
 {
@@ -82,7 +84,7 @@ double avg_turnaround_time(std::vector<process> original, std::vector<process> c
 //algo go here
 
 //First-come-first-served (FCFS)
-void FCFS(std::vector<process> processes, double t_cs, int tau_initial)
+void FCFS(std::vector<process> processes, double t_cs, int tau_initial, FILE *fp)
 {
     int total_processes = processes.size();
     int completed = 0;
@@ -188,14 +190,15 @@ void FCFS(std::vector<process> processes, double t_cs, int tau_initial)
                         double avg_wait = avg_wait_time(completed_processes);
                         double avg_turnaround = avg_CPU_burst_time + avg_wait + t_cs;
                         double CPU_active = (aCPU.getActive() / time) * 100;
+
                         printf("time %dms: Simulator ended for FCFS %s\n", int(time), printQueue(queue).c_str());
-                        printf("Algorithm FCFS\n");
-                        printf("-- average CPU burst time: %.3f ms\n", avg_CPU_burst_time);
-                        printf("-- average wait time: %.3f ms\n", avg_wait);
-                        printf("-- average turnaround time: %.3f ms\n", avg_turnaround);
-                        printf("-- total number of context switches: %d\n", context_switch);
-                        printf("-- total number of preemptions: %d\n", preemptions);
-                        printf("-- CPU utilization: %.3f%%\n", CPU_active);
+                        fprintf(fp, "Algorithm FCFS\n");
+                        fprintf(fp, "-- average CPU burst time: %.3f ms\n", avg_CPU_burst_time);
+                        fprintf(fp, "-- average wait time: %.3f ms\n", avg_wait);
+                        fprintf(fp, "-- average turnaround time: %.3f ms\n", avg_turnaround);
+                        fprintf(fp, "-- total number of context switches: %d\n", context_switch);
+                        fprintf(fp, "-- total number of preemptions: %d\n", preemptions);
+                        fprintf(fp, "-- CPU utilization: %.3f%%\n", CPU_active);
 
                         return;
                     }
@@ -254,7 +257,7 @@ bool comparision(process a, process b)
     return (a.getTotalBursts() < b.getTotalBursts());
 }
 
-void SJF(std::vector<process> processes, double t_cs, double alpha, int tau_initial)
+void SJF(std::vector<process> processes, double t_cs, double alpha, int tau_initial, FILE *fp)
 {
     int tau_before = tau_initial;
     int tau_new = 0;
@@ -354,19 +357,22 @@ void SJF(std::vector<process> processes, double t_cs, double alpha, int tau_init
                     if (completed == total_processes)
                     {
                         //print stats: CHANGE TO PRINT TO FILE
+
                         time += t_cs / 2;
                         context_switch += 1;
                         double avg_wait = avg_wait_time(completed_processes);
                         double avg_turnaround = avg_CPU_burst_time + avg_wait + t_cs;
                         double CPU_active = (aCPU.getActive() / time) * 100;
+
                         printf("time %dms: Simulator ended for SJF %s\n", int(time), printQueue(queue).c_str());
-                        printf("Algorithm SJF\n");
-                        printf("-- average CPU burst time: %.3f ms\n", avg_CPU_burst_time);
-                        printf("-- average wait time: %.3f ms\n", avg_wait);
-                        printf("-- average turnaround time: %.3f ms\n", avg_turnaround);
-                        printf("-- total number of context switches: %d\n", context_switch);
-                        printf("-- total number of preemptions: %d\n", preemptions);
-                        printf("-- CPU utilization: %.3f%%\n", CPU_active);
+                        fprintf(fp, "Algorithm SJF\n");
+                        fprintf(fp, "-- average CPU burst time: %.3f ms\n", avg_CPU_burst_time);
+                        fprintf(fp, "-- average wait time: %.3f ms\n", avg_wait);
+                        fprintf(fp, "-- average turnaround time: %.3f ms\n", avg_turnaround);
+                        fprintf(fp, "-- total number of context switches: %d\n", context_switch);
+                        fprintf(fp, "-- total number of preemptions: %d\n", preemptions);
+                        fprintf(fp, "-- CPU utilization: %.3f%%\n", CPU_active);
+
                         return;
                     }
                 }
@@ -427,7 +433,7 @@ bool alphaSort(process a, process b)
 {
     return (a < b);
 }
-void SRT(std::vector<process> processes, double t_cs, double alpha, int tau_initial)
+void SRT(std::vector<process> processes, double t_cs, double alpha, int tau_initial, FILE *fp)
 {
     int tau_before = tau_initial;
     int tau_new = 0;
@@ -555,14 +561,16 @@ void SRT(std::vector<process> processes, double t_cs, double alpha, int tau_init
                         double avg_wait = avg_wait_time(completed_processes);
                         double avg_turnaround = avg_CPU_burst_time + avg_wait + t_cs;
                         double CPU_active = (aCPU.getActive() / time) * 100;
+
                         printf("time %dms: Simulator ended for SRT %s\n", int(time), printQueue(queue).c_str());
-                        printf("Algorithm SRT\n");
-                        printf("-- average CPU burst time: %.3f ms\n", avg_CPU_burst_time);
-                        printf("-- average wait time: %.3f ms\n", avg_wait);
-                        printf("-- average turnaround time: %.3f ms\n", avg_turnaround);
-                        printf("-- total number of context switches: %d\n", context_switch);
-                        printf("-- total number of preemptions: %d\n", preemptions);
-                        printf("-- CPU utilization: %.3f%%\n", CPU_active);
+                        fprintf(fp, "Algorithm SRT\n");
+                        fprintf(fp, "-- average CPU burst time: %.3f ms\n", avg_CPU_burst_time);
+                        fprintf(fp, "-- average wait time: %.3f ms\n", avg_wait);
+                        fprintf(fp, "-- average turnaround time: %.3f ms\n", avg_turnaround);
+                        fprintf(fp, "-- total number of context switches: %d\n", context_switch);
+                        fprintf(fp, "-- total number of preemptions: %d\n", preemptions);
+                        fprintf(fp, "-- CPU utilization: %.3f%%\n", CPU_active);
+
                         return;
                     }
                 }
@@ -616,7 +624,7 @@ void SRT(std::vector<process> processes, double t_cs, double alpha, int tau_init
 }
 
 //Round robin (RR)
-void RR(std::vector<process> processes, double t_cs, double t_slice, int tau_inital)
+void RR(std::vector<process> processes, double t_cs, double t_slice, int tau_inital, FILE *fp)
 {
 
     int total_processes = processes.size();
@@ -681,13 +689,13 @@ void RR(std::vector<process> processes, double t_cs, double t_slice, int tau_ini
                             double avg_turnaround = avg_turnaround_time(copy_process, completed_processes, t_cs);
                             double CPU_active = (aCPU.getActive() / time) * 100;
                             printf("time %dms: Simulator ended for RR %s\n", int(time), printQueue(queue).c_str());
-                            printf("Algorithm RR\n");
-                            printf("-- average CPU burst time: %.3f ms\n", avg_CPU_burst_time);
-                            printf("-- average wait time: %.3f ms\n", avg_wait);
-                            printf("-- average turnaround time: %.3f ms\n", avg_turnaround);
-                            printf("-- total number of context switches: %d\n", context_switch);
-                            printf("-- total number of preemptions: %d\n", preemptions);
-                            printf("-- CPU utilization: %.3f%%\n", CPU_active);
+                            fprintf(fp, "Algorithm RR\n");
+                            fprintf(fp, "-- average CPU burst time: %.3f ms\n", avg_CPU_burst_time);
+                            fprintf(fp, "-- average wait time: %.3f ms\n", avg_wait);
+                            fprintf(fp, "-- average turnaround time: %.3f ms\n", avg_turnaround);
+                            fprintf(fp, "-- total number of context switches: %d\n", context_switch);
+                            fprintf(fp, "-- total number of preemptions: %d\n", preemptions);
+                            fprintf(fp, "-- CPU utilization: %.3f%%\n", CPU_active);
 
                             return;
                         }
@@ -897,6 +905,8 @@ std::vector<process> create_processes(int n, int seed, double lambda, double upp
 int main(int argc, char *argv[])
 {
 
+    FILE *myfile = fopen("simout.txt", "w");
+
     int n = std::stoi(argv[1]);
     int seed = std::stoi(argv[2]);
     double lambda = std::stod(argv[3]);
@@ -916,16 +926,10 @@ int main(int argc, char *argv[])
     }
     printf("\n");
     printf("\n");
-    /*
-    for(int i = 0; i < processes.size(); i++){
-        std::cout<<"in the vector pID is: "<<processes[i].getpID()<<"\n";
-        std::cout<<"in the vector pID is: "<<processes[i].getArrivialTime()<<"\n";
-        std::cout<<"in the vector pID is: "<<processes[i].getState()<<"\n";
-    }*/
 
-    FCFS(processes, t_cs, tau_initial);
-    SJF(processes, t_cs, alpha, tau_initial);
-    SRT(processes, t_cs, alpha, tau_initial);
-    RR(processes, t_cs, t_slice, tau_initial);
+    FCFS(processes, t_cs, tau_initial, myfile);
+    SJF(processes, t_cs, alpha, tau_initial, myfile);
+    SRT(processes, t_cs, alpha, tau_initial, myfile);
+    RR(processes, t_cs, t_slice, tau_initial, myfile);
     return 0;
 }
