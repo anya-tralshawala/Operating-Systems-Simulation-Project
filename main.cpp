@@ -44,7 +44,6 @@ double avg_burst(std::vector<process> processes)
         //loop through all processes
         std::vector<cpuBurst> current_bursts = processes[i].getAllBursts();
         double burst_sum = 0;
-
         for (int j = 0; j < current_bursts.size(); j++)
         {
             //loop through all bursts
@@ -70,12 +69,21 @@ double avg_wait_time(std::vector<process> completed_processes)
     return sum / size;
 }
 
+double avg_turnaround_time(std::vector<process> original ,std::vector<process> completed_processes, double t_cs){
+    double sum = 0;
+    double size = 0;
+    for (int i = 0; i < completed_processes.size(); i++)
+    {
+        sum += completed_processes[i].getTurnaroundTime();
+        size += completed_processes[i].getTotalBursts();
+    }
+    return sum/size;
+}
 //algo go here
 
 //First-come-first-served (FCFS)
 void FCFS(std::vector<process> processes, double t_cs, int tau_initial)
 {
-
     int total_processes = processes.size();
     int completed = 0;
     int time = 0;
@@ -102,7 +110,6 @@ void FCFS(std::vector<process> processes, double t_cs, int tau_initial)
             if (processes[i].getArrivialTime() == time)
             {
                 queue.push_back(processes[i]);
-
                 printf("time %dms: Process %c arrived; added to ready queue %s\n", time, toupper(char(processes[i].getpID())), printQueue(queue).c_str());
             }
         }
@@ -116,15 +123,12 @@ void FCFS(std::vector<process> processes, double t_cs, int tau_initial)
             std::vector<process> temp_list;
             while (i < waitstate.size())
             {
-
                 process curr = waitstate[i];
-
                 curr.setBurst(aCPU.get_prev());
                 //printf("curr: %f\n", curr.getWaitTime());
                 //printf("time: %d\n", time);
                 if (int(curr.getWaitTime()) == time)
                 {
-
                     curr.setWaitTime(-99);
                     //process completed IO burst, add back to the ready queue
                     temp_list.push_back(curr);
@@ -132,8 +136,6 @@ void FCFS(std::vector<process> processes, double t_cs, int tau_initial)
                     save_size = waitstate.size();
                     std::vector<process>::iterator itr2 = waitstate.begin() + i;
                     waitstate.erase(itr2);
-
-                    //printf("time %dms: Process %c completed I/O; added to ready queue %s\n", time, toupper(char(curr.getpID())), printQueue(queue).c_str());
                 }
                 else
                 {
@@ -151,11 +153,9 @@ void FCFS(std::vector<process> processes, double t_cs, int tau_initial)
                 }
             }
         }
-
         /*check is process is done running on CPU*/
         if (aCPU.checkstate() == true)
         {
-
             /*something is running on the CPU, check if it is finished*/
             process current = aCPU.getProcess();
             current.setBurst(current.getAllBursts()[0]);
@@ -164,7 +164,6 @@ void FCFS(std::vector<process> processes, double t_cs, int tau_initial)
             //ISSUE: time needs to be compared to CPUtime + original time it started
             //if(current.getCurrent().get_CPUtime() + aCPU.getTime() == time && aCPU.getContext() == 0)
             if (current.getCurrent().get_CPUtime() + aCPU.getTime() + int(t_cs / 2) == time)
-
             {
 
                 aCPU.setState(false);
@@ -172,7 +171,6 @@ void FCFS(std::vector<process> processes, double t_cs, int tau_initial)
                 int check_finished = current.getRemainingBursts();
                 if (check_finished == 0)
                 {
-
                     /*all CPU bursts completed, update number of completed processes*/
                     completed += 1;
                     completed_processes.push_back(current);
@@ -208,44 +206,28 @@ void FCFS(std::vector<process> processes, double t_cs, int tau_initial)
                     printf("time %dms: Process %c completed a CPU burst; %d bursts to go %s\n", time, toupper(char(current.getpID())), check_finished, printQueue(queue).c_str());
 
                     waitstate.push_back(current);
-                    //printf("incpu: %f\n", current.getCurrent().get_IOtime());
                     double switch_time = t_cs / 2;
                     double waiting_time = time + current.getCurrent().get_IOtime() + switch_time;
-                    //printf("%d, %f, %f\n", time, current.getCurrent().get_IOtime(), switch_time);
                     aCPU.set_prev(current.getCurrent());
-                    //current.removeBurst(current.getCurrent());
                     waitstate.back().setWaitTime(waiting_time);
-                    //aCPU.setTime(time + t_cs/2);
-                    //aCPU.set_waiting(waiting_time);
                     aCPU.updateContext(t_cs / 2);
                     printf("time %dms: Process %c switching out of CPU; will block on I/O until time %dms %s\n", int(time), toupper(char(current.getpID())), int(waiting_time), printQueue(queue).c_str());
                 }
                 context_switch += 1;
             }
         }
-        //printf("%s\n", printQueue(queue).c_str());
-        /*check if ready queue is not empty, and if CPU is available*/
-        //if (queue.size() != 0)
-        //{
 
-        //printf("CPU: %f\n",aCPU.getContext());
+        /*check if ready queue is not empty, and if CPU is available*/
         if (aCPU.checkstate() == false && aCPU.getContext() == 0 && queue.size() != 0)
         {
             /*start running process*/
-
             /*set CPU state and update process running on CPU*/
             aCPU.setState(true);
-
             aCPU.setProcess(queue.front());
-
             aCPU.setTime(time);
-
             process nowrunning = queue.front();
-
             queue.erase(queue.begin());
-
             aCPU.updateActive(nowrunning.getAllBursts()[0].get_CPUtime());
-
             aCPU.updateContext(t_cs / 2);
             printf("time %dms: Process %c started using the CPU for %dms burst %s\n", int(time + t_cs / 2), toupper(char(nowrunning.getpID())), int(nowrunning.getAllBursts()[0].get_CPUtime()), printQueue(queue).c_str());
         }
@@ -254,15 +236,11 @@ void FCFS(std::vector<process> processes, double t_cs, int tau_initial)
         {
             aCPU.updateContext(-1);
         }
-
         //update wait times, CPU is not available processes waiting
         for (int k = 0; k < queue.size(); k++)
         {
             queue[k].updateWaitTime();
         }
-
-        //}
-
         /*increment time variable*/
         time += 1;
     }
@@ -566,17 +544,16 @@ void RR(std::vector<process> processes, double t_cs, double t_slice, int tau_ini
     /*start simulation, continue until all processes are completed*/
     while (completed != total_processes)
     {
-
         /*check is process is done running on CPU*/
         if (aCPU.checkstate() == true)
         {
             /*something is running on the CPU, check if it is finished*/
+            aCPU.getProcess().setTurnaroundTime(aCPU.getProcess().getTurnaroundTime() + 1);
             current = aCPU.getProcess();
             aCPU.getProcess().setBurst(current.getAllBursts()[0]);
 
             /*check if the CPU burst of the process is finished*/
             /*OR if the time slice is expire*/
-
             if ((current.getCurrent().get_CPUtime() + aCPU.getTime() + int(t_cs / 2) == time) || (time_switch == time))
             {
                 /*case 1 - process finished before the time slice expired */
@@ -586,10 +563,12 @@ void RR(std::vector<process> processes, double t_cs, double t_slice, int tau_ini
                     aCPU.setState(false);
                     current.removeBurst(current.getCurrent());
                     int check_finished = current.getRemainingBursts();
+                    
                     if (check_finished == 0)
                     {
                         /*all CPU bursts completed, update number of completed processes*/
                         completed += 1;
+                        current.setTurnaroundTime(current.getTurnaroundTime() + t_cs/2);
                         completed_processes.push_back(current);
 
                         aCPU.setProcess(i);
@@ -603,7 +582,7 @@ void RR(std::vector<process> processes, double t_cs, double t_slice, int tau_ini
 
                             context_switch += 1;
                             double avg_wait = avg_wait_time(completed_processes);
-                            double avg_turnaround = avg_CPU_burst_time + avg_wait + t_cs;
+                            double avg_turnaround = avg_turnaround_time(copy_process,completed_processes,t_cs);
                             double CPU_active = (aCPU.getActive() / time) * 100;
                             printf("time %dms: Simulator ended for RR %s\n", int(time), printQueue(queue).c_str());
                             printf("Algorithm RR\n");
@@ -627,6 +606,7 @@ void RR(std::vector<process> processes, double t_cs, double t_slice, int tau_ini
                         double waiting_time = time + current.getCurrent().get_IOtime() + switch_time;
                         aCPU.set_prev(current.getCurrent());
                         waitstate.back().setWaitTime(waiting_time);
+                        waitstate.back().setTurnaroundTime(waitstate.back().getTurnaroundTime() + t_cs/2);
                         aCPU.updateContext(t_cs / 2);
 
                         printf("time %dms: Process %c switching out of CPU; will block on I/O until time %dms %s\n", int(time), toupper(char(current.getpID())), int(waiting_time), printQueue(queue).c_str());
@@ -648,6 +628,7 @@ void RR(std::vector<process> processes, double t_cs, double t_slice, int tau_ini
                     //process and time to switch in new process
                     current.getCurrent().update_CPU(t_slice);
                     current.getAllBursts()[0].update_CPU(t_slice);
+                    current.updateSwitches(1);
                     aCPU.setProcess(i);
                     queue.push_back(current);
                     queue.back().decWaitTime(t_cs / 2);
@@ -669,7 +650,6 @@ void RR(std::vector<process> processes, double t_cs, double t_slice, int tau_ini
         /*check if waitIO queue has anything that finished*/
         if (waitstate.size() != 0)
         {
-
             //loop through, check if any IO has finished
             int save_size = waitstate.size();
             int i = 0;
@@ -709,7 +689,6 @@ void RR(std::vector<process> processes, double t_cs, double t_slice, int tau_ini
             if (processes[i].getArrivialTime() == time)
             {
                 queue.push_back(processes[i]);
-
                 printf("time %dms: Process %c arrived; added to ready queue %s\n", time, toupper(char(processes[i].getpID())), printQueue(queue).c_str());
             }
         }
@@ -718,18 +697,12 @@ void RR(std::vector<process> processes, double t_cs, double t_slice, int tau_ini
         if (aCPU.checkstate() == false && aCPU.getContext() == 0 && queue.size() != 0)
         {
             /*start running process*/
-
             /*set CPU state and update process running on CPU*/
             aCPU.setState(true);
-
             aCPU.setProcess(queue.front());
-
             aCPU.setTime(time);
-
             process nowrunning = queue.front();
-
             queue.erase(queue.begin());
-
             aCPU.updateContext(t_cs / 2);
             if (int(nowrunning.getAllBursts()[0].get_CPUtime()) == int(nowrunning.getAllBursts()[0].getOriginal()))
             {
@@ -748,11 +721,11 @@ void RR(std::vector<process> processes, double t_cs, double t_slice, int tau_ini
         {
             aCPU.updateContext(-1);
         }
-
         //update wait times, CPU is not available processes waiting
         for (int k = 0; k < queue.size(); k++)
         {
             queue[k].updateWaitTime();
+            queue[k].setTurnaroundTime(queue[k].getTurnaroundTime() + 1);
         }
 
         //increment time
@@ -854,9 +827,9 @@ int main(int argc, char *argv[])
         std::cout<<"in the vector pID is: "<<processes[i].getState()<<"\n";
     }*/
 
-    // FCFS(processes, t_cs, tau_initial);
+    //FCFS(processes, t_cs, tau_initial);
     // SRT(processes, t_cs, alpha, tau_initial);
-    SJF(processes, t_cs, n, tau_initial, alpha);
-    // RR(processes, t_cs, t_slice, tau_initial);
+    //SJF(processes, t_cs, n, tau_initial, alpha);
+    RR(processes, t_cs, t_slice, tau_initial);
     return 0;
 }

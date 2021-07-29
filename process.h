@@ -25,7 +25,8 @@ public:
     double getCompletionTime() { return completion_time; }
     double getWaitTime() { return wait_time; }
     bool operator<(const process &other) const { return pid < other.pid; }
-
+    double getSwitches(){return num_switches;}
+    
     // cpuBurst cpuBurst::getBurstAt(int i){return all_bursts[i]}
 
     // MODIFIERS
@@ -36,14 +37,15 @@ public:
     void setBurst(cpuBurst &setthis) { currently_on = setthis; }
     void updateWaitTime() { wait_queue += 1; }
     void decWaitTime(double time) {wait_queue -= time;}
-    void updateTau(double al, double time) {tau = (al * time) + ((1-al) * tau); }    
+    void updateTau(double al, double time) {tau = (al * time) + ((1-al) * tau); }   
+    void updateSwitches(double num){num_switches += num;} 
     //private member variables
 private:
     std::vector<cpuBurst> all_bursts;
     cpuBurst currently_on;
     int state;
     double arrival_time;
-
+    double num_switches;
     double wait_time;
     double turnaround_time;
     double completion_time;

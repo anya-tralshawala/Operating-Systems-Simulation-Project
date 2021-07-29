@@ -19,6 +19,7 @@ process::process(int aState, int aPid, double aTime, std::vector<cpuBurst> aBurs
     tau = atau;
     turnaround_time = 0;
     completion_time = 0;
+    num_switches = 0;
 
     
 }
@@ -38,6 +39,7 @@ process::process()
     wait_time = 0;
     turnaround_time = 0;
     completion_time = 0;
+    num_switches = 0;
 
     
 }
@@ -66,7 +68,7 @@ process::process(const process &i)
     wait_time = i.wait_time;
     tau = i.tau;
     
-
+    num_switches = i.num_switches;
     turnaround_time = i.turnaround_time;
     completion_time = i.completion_time;
    
