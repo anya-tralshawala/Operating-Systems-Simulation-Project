@@ -371,7 +371,6 @@ void SRT(std::vector<process> processes, double t_cs, double alpha, int tau_init
             std::vector<process> temp_list;
             while (i < waitstate.size())
             {
-
                 //add to ready queue
                 process curr = waitstate[i];
                 curr.setBurst(aCPU.get_prev());

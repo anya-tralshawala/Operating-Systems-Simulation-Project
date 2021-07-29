@@ -1,5 +1,6 @@
 #include <iostream>
 #include <vector>
+#include <cmath>
 #include "cpuBurst.h"
 
 class process
@@ -38,7 +39,7 @@ public:
     void setBurst(cpuBurst &setthis) { currently_on = setthis; }
     void updateWaitTime() { wait_queue += 1; }
     void decWaitTime(double time) {wait_queue -= time;}
-    void updateTau(double al, double time) {tau = (al * time) + ((1-al) * tau); }   
+    void updateTau(double al, double time) {tau = ceil((al * time) + ((1-al) * tau)); }   
     void updateSwitches(double num){num_switches += num;} 
     //private member variables
 private:
