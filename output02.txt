@@ -2,6 +2,4 @@ Process A (arrival time 9 ms) 16 CPU bursts (tau 100ms)
 
 
 time 0ms: Simulator started for SJF [Q empty]
-alpha is 0.5
-time is 56
 old tau 100 : new tau 78

@@ -36,7 +36,7 @@ public:
     void setBurst(cpuBurst &setthis) { currently_on = setthis; }
     void updateWaitTime() { wait_queue += 1; }
     void decWaitTime(double time) {wait_queue -= time;}
-    void updateTau(double al, double time) {tau = (al * time) + (al * tau); }    
+    void updateTau(double al, double time) {tau = (al * time) + ((1-al) * tau); }    
     //private member variables
 private:
     std::vector<cpuBurst> all_bursts;
