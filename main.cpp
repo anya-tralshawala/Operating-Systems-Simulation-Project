@@ -112,7 +112,10 @@ void FCFS(std::vector<process> processes, double t_cs, int tau_initial, FILE *fp
             if (processes[i].getArrivialTime() == time)
             {
                 queue.push_back(processes[i]);
-                printf("time %dms: Process %c arrived; added to ready queue %s\n", time, toupper(char(processes[i].getpID())), printQueue(queue).c_str());
+                if (time <= 999)
+                {
+                    printf("time %dms: Process %c arrived; added to ready queue %s\n", time, toupper(char(processes[i].getpID())), printQueue(queue).c_str());
+                }
             }
         }
         /*check if waitIO queue has anything that finished*/
@@ -151,7 +154,10 @@ void FCFS(std::vector<process> processes, double t_cs, int tau_initial, FILE *fp
                 for (int i = 0; i < temp_list.size(); i++)
                 {
                     queue.push_back(temp_list[i]);
-                    printf("time %dms: Process %c completed I/O; added to ready queue %s\n", time, toupper(char(temp_list[i].getpID())), printQueue(queue).c_str());
+                    if (time <= 999)
+                    {
+                        printf("time %dms: Process %c completed I/O; added to ready queue %s\n", time, toupper(char(temp_list[i].getpID())), printQueue(queue).c_str());
+                    }
                 }
             }
         }
@@ -206,15 +212,20 @@ void FCFS(std::vector<process> processes, double t_cs, int tau_initial, FILE *fp
                 else
                 {
                     /*CPU burst finished, remove from burst list and switch waiting on IO*/
-                    printf("time %dms: Process %c completed a CPU burst; %d bursts to go %s\n", time, toupper(char(current.getpID())), check_finished, printQueue(queue).c_str());
-
+                    if (time <= 999)
+                    {
+                        printf("time %dms: Process %c completed a CPU burst; %d bursts to go %s\n", time, toupper(char(current.getpID())), check_finished, printQueue(queue).c_str());
+                    }
                     waitstate.push_back(current);
                     double switch_time = t_cs / 2;
                     double waiting_time = time + current.getCurrent().get_IOtime() + switch_time;
                     aCPU.set_prev(current.getCurrent());
                     waitstate.back().setWaitTime(waiting_time);
                     aCPU.updateContext(t_cs / 2);
-                    printf("time %dms: Process %c switching out of CPU; will block on I/O until time %dms %s\n", int(time), toupper(char(current.getpID())), int(waiting_time), printQueue(queue).c_str());
+                    if (time <= 999)
+                    {
+                        printf("time %dms: Process %c switching out of CPU; will block on I/O until time %dms %s\n", int(time), toupper(char(current.getpID())), int(waiting_time), printQueue(queue).c_str());
+                    }
                 }
                 context_switch += 1;
             }
@@ -232,7 +243,10 @@ void FCFS(std::vector<process> processes, double t_cs, int tau_initial, FILE *fp
             queue.erase(queue.begin());
             aCPU.updateActive(nowrunning.getAllBursts()[0].get_CPUtime());
             aCPU.updateContext(t_cs / 2);
-            printf("time %dms: Process %c started using the CPU for %dms burst %s\n", int(time + t_cs / 2), toupper(char(nowrunning.getpID())), int(nowrunning.getAllBursts()[0].get_CPUtime()), printQueue(queue).c_str());
+            if ((time + t_cs / 2) <= 999)
+            {
+                printf("time %dms: Process %c started using the CPU for %dms burst %s\n", int(time + t_cs / 2), toupper(char(nowrunning.getpID())), int(nowrunning.getAllBursts()[0].get_CPUtime()), printQueue(queue).c_str());
+            }
         }
         //update context switch var
         else if (aCPU.getContext() > 0)
@@ -259,8 +273,6 @@ bool comparision(process a, process b)
 
 void SJF(std::vector<process> processes, double t_cs, double alpha, int tau_initial, FILE *fp)
 {
-    int tau_before = tau_initial;
-    int tau_new = 0;
     int total_processes = processes.size();
     int completed = 0;
     int time = 0;
@@ -289,7 +301,10 @@ void SJF(std::vector<process> processes, double t_cs, double alpha, int tau_init
             if (processes[i].getArrivialTime() == time)
             {
                 queue.push_back(processes[i]);
-                printf("time %dms: Process %c arrived; added to ready queue %s\n", time, toupper(char(processes[i].getpID())), printQueue(queue).c_str());
+                if (time <= 999)
+                {
+                    printf("time %dms: Process %c arrived; added to ready queue %s\n", time, toupper(char(processes[i].getpID())), printQueue(queue).c_str());
+                }
             }
         }
         /*check if waitIO queue has anything that finished*/
@@ -327,7 +342,10 @@ void SJF(std::vector<process> processes, double t_cs, double alpha, int tau_init
                 for (int i = 0; i < temp_list.size(); i++)
                 {
                     queue.push_back(temp_list[i]);
-                    printf("time %dms: Process %c (tau %dms) completed I/O; added to ready queue %s\n", time, toupper(char(temp_list[i].getpID())), temp_list[i].getTau(), printQueue(queue).c_str());
+                    if (time <= 999)
+                    {
+                        printf("time %dms: Process %c (tau %dms) completed I/O; added to ready queue %s\n", time, toupper(char(temp_list[i].getpID())), temp_list[i].getTau(), printQueue(queue).c_str());
+                    }
                 }
             }
         }
@@ -379,19 +397,27 @@ void SJF(std::vector<process> processes, double t_cs, double alpha, int tau_init
                 else
                 {
                     /*CPU burst finished, remove from burst list and switch waiting on IO*/
-                    printf("time %dms: Process %c (tau %dms) completed a CPU burst; %d bursts to go %s\n", time, toupper(char(current.getpID())), current.getTau(), check_finished, printQueue(queue).c_str());
-
+                    if (time <= 999)
+                    {
+                        printf("time %dms: Process %c (tau %dms) completed a CPU burst; %d bursts to go %s\n", time, toupper(char(current.getpID())), current.getTau(), check_finished, printQueue(queue).c_str());
+                    }
                     //CHANGE: recalculate tau for the process
                     int save_tau = current.getTau();
                     current.updateTau(alpha, totalCPUtime);
-                    printf("time %dms: Recalculated tau from %dms to %dms for process %s\n", time, save_tau, current.getTau(), printQueue(queue).c_str());
+                    if (time <= 999)
+                    {
+                        printf("time %dms: Recalculated tau from %dms to %dms for process %s\n", time, save_tau, current.getTau(), printQueue(queue).c_str());
+                    }
                     waitstate.push_back(current);
                     double switch_time = t_cs / 2;
                     double waiting_time = time + current.getCurrent().get_IOtime() + switch_time;
                     aCPU.set_prev(current.getCurrent());
                     waitstate.back().setWaitTime(waiting_time);
                     aCPU.updateContext(t_cs / 2);
-                    printf("time %dms: Process %c switching out of CPU; will block on I/O until time %dms %s\n", int(time), toupper(char(current.getpID())), int(waiting_time), printQueue(queue).c_str());
+                    if (time <= 999)
+                    {
+                        printf("time %dms: Process %c switching out of CPU; will block on I/O until time %dms %s\n", int(time), toupper(char(current.getpID())), int(waiting_time), printQueue(queue).c_str());
+                    }
                 }
                 context_switch += 1;
             }
@@ -409,7 +435,10 @@ void SJF(std::vector<process> processes, double t_cs, double alpha, int tau_init
             aCPU.updateActive(nowrunning.getAllBursts()[0].get_CPUtime());
             aCPU.updateContext(t_cs / 2);
             totalCPUtime = ceil(int(nowrunning.getAllBursts()[0].get_CPUtime()));
-            printf("time %dms: Process %c (tau %dms) started using the CPU for %dms burst %s\n", int(time + t_cs / 2), toupper(char(nowrunning.getpID())), nowrunning.getTau(), totalCPUtime, printQueue(queue).c_str());
+            if (int(time + t_cs / 2) <= 999)
+            {
+                printf("time %dms: Process %c (tau %dms) started using the CPU for %dms burst %s\n", int(time + t_cs / 2), toupper(char(nowrunning.getpID())), nowrunning.getTau(), totalCPUtime, printQueue(queue).c_str());
+            }
         }
         //update context switch var
         else if (aCPU.getContext() > 0)
@@ -435,8 +464,6 @@ bool alphaSort(process a, process b)
 }
 void SRT(std::vector<process> processes, double t_cs, double alpha, int tau_initial, FILE *fp)
 {
-    int tau_before = tau_initial;
-    int tau_new = 0;
     int total_processes = processes.size();
     int completed = 0;
     int time = 0;
@@ -488,7 +515,10 @@ void SRT(std::vector<process> processes, double t_cs, double alpha, int tau_init
                 {
                     queue.push_back(processes[i]);
                 }
-                printf("time %dms: Process %c (tau %dms) arrived; added to ready queue %s\n", time, toupper(char(processes[i].getpID())), processes[i].getTau(), printQueue(queue).c_str());
+                if (time <= 999)
+                {
+                    printf("time %dms: Process %c (tau %dms) arrived; added to ready queue %s\n", time, toupper(char(processes[i].getpID())), processes[i].getTau(), printQueue(queue).c_str());
+                }
             }
         }
         /*check if waitIO queue has anything that finished*/
@@ -526,7 +556,10 @@ void SRT(std::vector<process> processes, double t_cs, double alpha, int tau_init
                 for (int i = 0; i < temp_list.size(); i++)
                 {
                     queue.push_back(temp_list[i]);
-                    printf("time %dms: Process %c (tau %dms) completed I/O; added to ready queue %s\n", time, toupper(char(temp_list[i].getpID())), temp_list[i].getTau(), printQueue(queue).c_str());
+                    if (time <= 999)
+                    {
+                        printf("time %dms: Process %c (tau %dms) completed I/O; added to ready queue %s\n", time, toupper(char(temp_list[i].getpID())), temp_list[i].getTau(), printQueue(queue).c_str());
+                    }
                 }
             }
         }
@@ -577,18 +610,27 @@ void SRT(std::vector<process> processes, double t_cs, double alpha, int tau_init
                 else
                 {
                     /*CPU burst finished, remove from burst list and switch waiting on IO*/
-                    printf("time %dms: Process %c (tau %dms) completed a CPU burst; %d bursts to go %s\n", time, toupper(char(current.getpID())), current.getTau(), check_finished, printQueue(queue).c_str());
+                    if (time <= 999)
+                    {
+                        printf("time %dms: Process %c (tau %dms) completed a CPU burst; %d bursts to go %s\n", time, toupper(char(current.getpID())), current.getTau(), check_finished, printQueue(queue).c_str());
+                    }
                     //recalculate tau for the process
                     int save_tau = current.getTau();
                     current.updateTau(alpha, totalCPUtime);
-                    printf("time %dms: Recalculated tau from %dms to %dms for process %s\n", time, save_tau, current.getTau(), printQueue(queue).c_str());
+                    if (time <= 999)
+                    {
+                        printf("time %dms: Recalculated tau from %dms to %dms for process %s\n", time, save_tau, current.getTau(), printQueue(queue).c_str());
+                    }
                     waitstate.push_back(current);
                     double switch_time = t_cs / 2;
                     double waiting_time = time + current.getCurrent().get_IOtime() + switch_time;
                     aCPU.set_prev(current.getCurrent());
                     waitstate.back().setWaitTime(waiting_time);
                     aCPU.updateContext(t_cs / 2);
-                    printf("time %dms: Process %c switching out of CPU; will block on I/O until time %dms %s\n", int(time), toupper(char(current.getpID())), int(waiting_time), printQueue(queue).c_str());
+                    if (time <= 999)
+                    {
+                        printf("time %dms: Process %c switching out of CPU; will block on I/O until time %dms %s\n", int(time), toupper(char(current.getpID())), int(waiting_time), printQueue(queue).c_str());
+                    }
                 }
                 context_switch += 1;
             }
@@ -606,7 +648,10 @@ void SRT(std::vector<process> processes, double t_cs, double alpha, int tau_init
             aCPU.updateActive(nowrunning.getAllBursts()[0].get_CPUtime());
             aCPU.updateContext(t_cs / 2);
             totalCPUtime = ceil(int(nowrunning.getAllBursts()[0].get_CPUtime()));
-            printf("time %dms: Process %c (tau %dms) started using the CPU for %dms burst %s\n", int(time + t_cs / 2), toupper(char(nowrunning.getpID())), nowrunning.getTau(), totalCPUtime, printQueue(queue).c_str());
+            if (int(time + t_cs / 2) <= 999)
+            {
+                printf("time %dms: Process %c (tau %dms) started using the CPU for %dms burst %s\n", int(time + t_cs / 2), toupper(char(nowrunning.getpID())), nowrunning.getTau(), totalCPUtime, printQueue(queue).c_str());
+            }
         }
         //update context switch var
         else if (aCPU.getContext() > 0)
@@ -643,7 +688,8 @@ void RR(std::vector<process> processes, double t_cs, double t_slice, int tau_ini
     process current = process();
     cpu aCPU = cpu(i);
 
-    printf("time %dms: Simulator started for RR %s\n", time, printQueue(queue).c_str());
+    printf("\n");
+    printf("time %dms: Simulator started for RR with time slice %dms %s\n", time, int(t_slice), printQueue(queue).c_str());
 
     /*start simulation, continue until all processes are completed*/
     while (completed != total_processes)
@@ -703,8 +749,10 @@ void RR(std::vector<process> processes, double t_cs, double t_slice, int tau_ini
                     else
                     {
                         /*CPU burst finished, remove from burst list and switch waiting on IO*/
-                        printf("time %dms: Process %c completed a CPU burst; %d bursts to go %s\n", time, toupper(char(current.getpID())), check_finished, printQueue(queue).c_str());
-
+                        if (time <= 999)
+                        {
+                            printf("time %dms: Process %c completed a CPU burst; %d bursts to go %s\n", time, toupper(char(current.getpID())), check_finished, printQueue(queue).c_str());
+                        }
                         waitstate.push_back(current);
                         double switch_time = t_cs / 2;
                         double waiting_time = time + current.getCurrent().get_IOtime() + switch_time;
@@ -712,8 +760,10 @@ void RR(std::vector<process> processes, double t_cs, double t_slice, int tau_ini
                         waitstate.back().setWaitTime(waiting_time);
                         waitstate.back().setTurnaroundTime(waitstate.back().getTurnaroundTime() + t_cs / 2);
                         aCPU.updateContext(t_cs / 2);
-
-                        printf("time %dms: Process %c switching out of CPU; will block on I/O until time %dms %s\n", int(time), toupper(char(current.getpID())), int(waiting_time), printQueue(queue).c_str());
+                        if (time <= 999)
+                        {
+                            printf("time %dms: Process %c switching out of CPU; will block on I/O until time %dms %s\n", int(time), toupper(char(current.getpID())), int(waiting_time), printQueue(queue).c_str());
+                        }
                     }
                     context_switch += 1;
                 }
@@ -727,7 +777,10 @@ void RR(std::vector<process> processes, double t_cs, double t_slice, int tau_ini
                     aCPU.setState(false);
 
                     //preempt process
-                    printf("time %dms: Time slice expired; process %c preempted with %dms to go %s\n", time, toupper(char(current.getpID())), int(current.getCurrent().get_CPUtime() - t_slice), printQueue(queue).c_str());
+                    if (time <= 999)
+                    {
+                        printf("time %dms: Time slice expired; process %c preempted with %dms to go %s\n", time, toupper(char(current.getpID())), int(current.getCurrent().get_CPUtime() - t_slice), printQueue(queue).c_str());
+                    }
                     //update CPU context wait time, since process is preempted include time to switch out
                     //process and time to switch in new process
                     current.getCurrent().update_CPU(t_slice);
@@ -746,7 +799,10 @@ void RR(std::vector<process> processes, double t_cs, double t_slice, int tau_ini
                     aCPU.setTime(aCPU.getTime() + t_slice);
                     aCPU.getProcess().getCurrent().update_CPU(t_slice);
                     aCPU.getProcess().getAllBursts()[0].update_CPU(t_slice);
-                    printf("time %dms: Time slice expired; no preemption because ready queue is empty %s\n", time, printQueue(queue).c_str());
+                    if (time <= 999)
+                    {
+                        printf("time %dms: Time slice expired; no preemption because ready queue is empty %s\n", time, printQueue(queue).c_str());
+                    }
                 }
             }
         }
@@ -783,7 +839,10 @@ void RR(std::vector<process> processes, double t_cs, double t_slice, int tau_ini
                 for (int i = 0; i < temp_list.size(); i++)
                 {
                     queue.push_back(temp_list[i]);
-                    printf("time %dms: Process %c completed I/O; added to ready queue %s\n", time, toupper(char(temp_list[i].getpID())), printQueue(queue).c_str());
+                    if (time <= 999)
+                    {
+                        printf("time %dms: Process %c completed I/O; added to ready queue %s\n", time, toupper(char(temp_list[i].getpID())), printQueue(queue).c_str());
+                    }
                 }
             }
         }
@@ -793,7 +852,10 @@ void RR(std::vector<process> processes, double t_cs, double t_slice, int tau_ini
             if (processes[i].getArrivialTime() == time)
             {
                 queue.push_back(processes[i]);
-                printf("time %dms: Process %c arrived; added to ready queue %s\n", time, toupper(char(processes[i].getpID())), printQueue(queue).c_str());
+                if (time <= 999)
+                {
+                    printf("time %dms: Process %c arrived; added to ready queue %s\n", time, toupper(char(processes[i].getpID())), printQueue(queue).c_str());
+                }
             }
         }
         /*check if ready queue is not empty, and if CPU is available*/
@@ -810,12 +872,18 @@ void RR(std::vector<process> processes, double t_cs, double t_slice, int tau_ini
             aCPU.updateContext(t_cs / 2);
             if (int(nowrunning.getAllBursts()[0].get_CPUtime()) == int(nowrunning.getAllBursts()[0].getOriginal()))
             {
-                printf("time %dms: Process %c started using the CPU for %dms burst %s\n", int(time + t_cs / 2), toupper(char(nowrunning.getpID())), int(nowrunning.getAllBursts()[0].get_CPUtime()), printQueue(queue).c_str());
+                if (time <= 999)
+                {
+                    printf("time %dms: Process %c started using the CPU for %dms burst %s\n", int(time + t_cs / 2), toupper(char(nowrunning.getpID())), int(nowrunning.getAllBursts()[0].get_CPUtime()), printQueue(queue).c_str());
+                }
                 aCPU.updateActive(nowrunning.getAllBursts()[0].get_CPUtime());
             }
             else
             {
-                printf("time %dms: Process %c started using the CPU for remaining %dms of %dms burst %s\n", int(time + t_cs / 2), toupper(char(nowrunning.getpID())), int(nowrunning.getAllBursts()[0].get_CPUtime()), int(nowrunning.getAllBursts()[0].getOriginal()), printQueue(queue).c_str());
+                if (int(time + t_cs / 2) <= 999)
+                {
+                    printf("time %dms: Process %c started using the CPU for remaining %dms of %dms burst %s\n", int(time + t_cs / 2), toupper(char(nowrunning.getpID())), int(nowrunning.getAllBursts()[0].get_CPUtime()), int(nowrunning.getAllBursts()[0].getOriginal()), printQueue(queue).c_str());
+                }
             }
             /*set time slice*/
             time_switch = t_slice + (time + t_cs / 2);
