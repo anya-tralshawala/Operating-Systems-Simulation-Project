@@ -338,6 +338,17 @@ void SRT(std::vector<process> processes, double t_cs, double alpha, int tau_init
                 }
                 //check if preemption occurs
                 //ISSUE: first check is being calculated incorrectly bc initially i-1 is a random value (145)
+                //CHANGE: instead of looking at a processes' arrival time, you should look at elapsed CPU time use 
+                //also, i think you should look at the process coming in (processes[i]) compared to the processes in the ready queue
+                //something like :
+                //for(int j = 0; j<queue.size(); j++){
+                //    if(processes[i].getTau() < queue[j].getTau() - queue[j].CPU_use_time()){
+                //         //preemption occurs
+                //          queue.insert(queue.begin(), processes[i]);
+                //          preemptions += 1;
+                //    }
+                //}
+                
                 if (processes[i].getTau() < (processes[i - 1].getTau() - processes[i].getArrivialTime()))
                 {
                     //      preemption occurs when: tau(want to add) < tau(currently_running) - CPU_time_use(currently_running)
@@ -350,11 +361,16 @@ void SRT(std::vector<process> processes, double t_cs, double alpha, int tau_init
                     queue.insert(queue.begin(), processes[i]);
                     preemptions += 1;
                 }
+                /*
+                else if(processes[i].getTau() == (processes[i - 1].getTau() - processes[i].getArrivialTime())){
+                    //CHANGE: here need to sort them alphabetically (if they have the same Tau values)
+                   
+                }*/
                 else
                 {
                     queue.push_back(processes[i]);
                 }
-                printf("time %dms: Process %c (tau %dms) arrived; added to ready queue %s\n", time, toupper(char(processes[i].getpID())), tau_initial, printQueue(queue).c_str());
+                printf("time %dms: Process %c (tau %dms) arrived; added to ready queue %s\n", time, toupper(char(processes[i].getpID())), processes[i].getTau(), printQueue(queue).c_str());
             }
         }
         /*check if waitIO queue has anything that finished*/
@@ -399,7 +415,7 @@ void SRT(std::vector<process> processes, double t_cs, double alpha, int tau_init
                 for (int i = 0; i < temp_list.size(); i++)
                 {
                     queue.push_back(temp_list[i]);
-                    printf("time %dms: Process %c (tau %dms) completed I/O; added to ready queue %s\n", time, toupper(char(temp_list[i].getpID())), tau_initial, printQueue(queue).c_str());
+                    printf("time %dms: Process %c (tau %dms) completed I/O; added to ready queue %s\n", time, toupper(char(temp_list[i].getpID())), temp_list[i].getTau(), printQueue(queue).c_str());
                 }
             }
         }
@@ -412,7 +428,7 @@ void SRT(std::vector<process> processes, double t_cs, double alpha, int tau_init
             current.setBurst(current.getAllBursts()[0]);
 
             /*check if the CPU burst of the process is finished*/
-            if (current.getCurrent().get_CPUtime() + aCPU.getTime() == time)
+            if (current.getCurrent().get_CPUtime() + aCPU.getTime() +int(t_cs / 2) == time)
             {
                 aCPU.setState(false);
                 current.removeBurst(current.getCurrent());
@@ -450,16 +466,22 @@ void SRT(std::vector<process> processes, double t_cs, double alpha, int tau_init
                 else
                 {
                     /*CPU burst finished, remove from burst list and switch waiting on IO*/
-                    printf("time %dms: Process %c (tau %dms) completed a CPU burst; %d bursts to go %s\n", time, toupper(char(current.getpID())), tau_initial, check_finished, printQueue(queue).c_str());
-                    for (int i = 0; i < total_processes; i++)
+                    printf("time %dms: Process %c (tau %dms) completed a CPU burst; %d bursts to go %s\n", time, toupper(char(current.getpID())), current.getTau(), check_finished, printQueue(queue).c_str());
+                    /*for (int i = 0; i < total_processes; i++)
                     {
+                        
                         if (processes[i].getTau() < (processes[i - 1].getTau() - processes[i].getArrivialTime()))
                         {
+                            int save_tau = processes[i].getTau();
                             processes[i].updateTau(alpha, totalCPUtime);
-                            printf("time %dms: Recalculated tau from %dms to %dms for process %s\n", time, tau_initial, processes[i].getTau(), printQueue(queue).c_str());
+                            printf("time %dms: Recalculated tau from %dms to %dms for process %s\n", time, save_tau, processes[i].getTau(), printQueue(queue).c_str());
                             tau_initial = processes[i].getTau();
                         }
-                    }
+                    }*/
+                    //CHANGE: recalculate tau for the process
+                    int save_tau = current.getTau();
+                    current.updateTau(alpha, totalCPUtime);
+                    printf("time %dms: Recalculated tau from %dms to %dms for process %s\n", time, save_tau, current.getTau(), printQueue(queue).c_str());
                     waitstate.push_back(current);
                     double switch_time = t_cs / 2;
                     double waiting_time = time + current.getCurrent().get_IOtime() + switch_time;
@@ -484,7 +506,7 @@ void SRT(std::vector<process> processes, double t_cs, double alpha, int tau_init
             aCPU.updateActive(nowrunning.getAllBursts()[0].get_CPUtime());
             aCPU.updateContext(t_cs / 2);
             totalCPUtime = ceil(int(nowrunning.getAllBursts()[0].get_CPUtime()));
-            printf("time %dms: Process %c (tau %dms) started using the CPU for %dms burst %s\n", int(time + t_cs / 2), toupper(char(nowrunning.getpID())), tau_initial, totalCPUtime, printQueue(queue).c_str());
+            printf("time %dms: Process %c (tau %dms) started using the CPU for %dms burst %s\n", int(time + t_cs / 2), toupper(char(nowrunning.getpID())), nowrunning.getTau(), totalCPUtime, printQueue(queue).c_str());
         }
         //update context switch var
         else if (aCPU.getContext() > 0)
