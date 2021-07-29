@@ -35,8 +35,12 @@ public:
     void removeBurst(cpuBurst removethis);
     void setBurst(cpuBurst &setthis) { currently_on = setthis; }
     void updateWaitTime() { wait_queue += 1; }
-    void decWaitTime(double time) { wait_queue -= time; }
-    void updateTau(int al, double time) { tau = (al * (time)) + ((1 - al) * (tau)); }
+    void decWaitTime(double time) {wait_queue -= time;}
+    void updateTau(double al, double time) {
+        
+        std::cout<<"alpha is "<<al<<"\n";
+        std::cout<<"time is "<< time << "\n";
+        tau = (al * time) + (al * tau); }    
     //private member variables
 private:
     std::vector<cpuBurst> all_bursts;

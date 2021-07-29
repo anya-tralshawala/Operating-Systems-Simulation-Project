@@ -17,35 +17,6 @@ Process P (arrival time 159 ms) 16 CPU bursts (tau 100ms)
 
 
 time 0ms: Simulator started for SJF [Q empty]
-time 0ms: Process A arrived; added to ready queue [Q A]
-time 0ms: Process B arrived; added to ready queue [Q A B]
-time 0ms: Process C arrived; added to ready queue [Q A B C]
-time 0ms: Process D arrived; added to ready queue [Q A B C D]
-time 0ms: Process E arrived; added to ready queue [Q A B C D E]
-time 0ms: Process F arrived; added to ready queue [Q A B C D E F]
-time 0ms: Process G arrived; added to ready queue [Q A B C D E F G]
-time 0ms: Process H arrived; added to ready queue [Q A B C D E F G H]
-time 0ms: Process I arrived; added to ready queue [Q A B C D E F G H I]
-time 0ms: Process J arrived; added to ready queue [Q A B C D E F G H I J]
-time 0ms: Process K arrived; added to ready queue [Q A B C D E F G H I J K]
-time 0ms: Process L arrived; added to ready queue [Q A B C D E F G H I J K L]
-time 0ms: Process M arrived; added to ready queue [Q A B C D E F G H I J K L M]
-time 0ms: Process N arrived; added to ready queue [Q A B C D E F G H I J K L M N]
-time 0ms: Process O arrived; added to ready queue [Q A B C D E F G H I J K L M N O]
-time 0ms: Process P arrived; added to ready queue [Q A B C D E F G H I J K L M N O P]
-process: aval; of100
-process: bval; of100
-process: cval; of100
-process: dval; of100
-process: eval; of100
-process: fval; of100
-process: gval; of100
-process: hval; of100
-process: ival; of100
-process: jval; of100
-process: kval; of100
-process: lval; of100
-process: mval; of100
-process: nval; of100
-process: oval; of100
-process: pval; of100
+alpha is 0.75
+time is 56
+old tau 100 : new tau 0
