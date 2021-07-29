@@ -416,7 +416,7 @@ void SRT(std::vector<process> processes, double t_cs, double alpha, int tau_init
 
                     aCPU.setProcess(i);
 
-                    printf("time %dms: Process %c (tau %dms) terminated %s\n", time, toupper(char(current.getpID())), tau_before, printQueue(queue).c_str());
+                    printf("time %dms: Process %c (tau %dms) terminated %s\n", time, toupper(char(current.getpID())), tau_initial, printQueue(queue).c_str());
 
                     if (completed == total_processes)
                     {
@@ -440,7 +440,7 @@ void SRT(std::vector<process> processes, double t_cs, double alpha, int tau_init
                 else
                 {
                     /*CPU burst finished, remove from burst list and switch waiting on IO*/
-                    printf("time %dms: Process %c (tau %dms) completed a CPU burst; %d bursts to go %s\n", time, toupper(char(current.getpID())), tau_before, check_finished, printQueue(queue).c_str());
+                    printf("time %dms: Process %c (tau %dms) completed a CPU burst; %d bursts to go %s\n", time, toupper(char(current.getpID())), tau_initial, check_finished, printQueue(queue).c_str());
                     for (int i = 0; i < total_processes; i++)
                     {
                         if (processes[i].getTau() < processes[i - 1].getTau() - processes[i].getRemainingTime())
@@ -475,7 +475,7 @@ void SRT(std::vector<process> processes, double t_cs, double alpha, int tau_init
             queue.erase(queue.begin());
             aCPU.updateActive(nowrunning.getAllBursts()[0].get_CPUtime());
             aCPU.updateContext(t_cs / 2);
-            printf("time %dms: Process %c (tau %dms) started using the CPU for %dms burst %s\n", int(time + t_cs / 2), toupper(char(nowrunning.getpID())), tau_before, int(nowrunning.getAllBursts()[0].get_CPUtime()), printQueue(queue).c_str());
+            printf("time %dms: Process %c (tau %dms) started using the CPU for %dms burst %s\n", int(time + t_cs / 2), toupper(char(nowrunning.getpID())), tau_initial, int(nowrunning.getAllBursts()[0].get_CPUtime()), printQueue(queue).c_str());
         }
         //update context switch var
         else if (aCPU.getContext() > 0)
