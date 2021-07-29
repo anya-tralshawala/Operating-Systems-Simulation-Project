@@ -1,22 +1,7 @@
-a, 56.000000
-a, 60.000000
-a, 39.000000
-a, 47.000000
-a, 137.000000
-a, 64.000000
-a, 68.000000
-a, 113.000000
-a, 11.000000
-a, 24.000000
-a, 76.000000
-a, 122.000000
-a, 9.000000
-a, 62.000000
-a, 200.000000
-a, 197.000000
 Process A (arrival time 9 ms) 16 CPU bursts (tau 100ms)
 
 
 time 0ms: Simulator started for SJF [Q empty]
-time 0ms: Process A arrived; added to ready queue [Q A]
-process: aval; of100
+alpha is 0.5
+time is 56
+old tau 100 : new tau 78

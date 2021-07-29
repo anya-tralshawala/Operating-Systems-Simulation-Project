@@ -297,7 +297,7 @@ bool comparision(process a, process b)
     return (a.getTotalBursts() < b.getTotalBursts());
 }
 
-void SJF(std::vector<process> proc, double t_cs, int n, int tau,int a)
+void SJF(std::vector<process> proc, double t_cs, int n, int tau,double a)
 {
 
     int completed = 0;
