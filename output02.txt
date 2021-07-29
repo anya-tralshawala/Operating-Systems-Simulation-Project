@@ -80,7 +80,7 @@ time 9445ms: Recalculated tau from 55ms to 127ms for process [Q empty]
 time 9445ms: Process A switching out of CPU; will block on I/O until time 9557ms [Q empty]
 time 9557ms: Process A (tau 127ms) completed I/O; added to ready queue [Q A]
 time 9559ms: Process A (tau 127ms) started using the CPU for 197ms burst [Q empty]
-time 9754ms: Process A (tau 127ms) terminated [Q empty]
+time 9754ms: Process A terminated [Q empty]
 time 9756ms: Simulator ended for SRT [Q empty]
 Algorithm SRT
 -- average CPU burst time: 80.312 ms

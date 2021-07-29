@@ -426,7 +426,7 @@ void SRT(std::vector<process> processes, double t_cs, double alpha, int tau_init
 
                     aCPU.setProcess(i);
 
-                    printf("time %dms: Process %c (tau %dms) terminated %s\n", time, toupper(char(current.getpID())), tau_initial, printQueue(queue).c_str());
+                    printf("time %dms: Process %c terminated %s\n", time, toupper(char(current.getpID())), printQueue(queue).c_str());
 
                     if (completed == total_processes)
                     {
