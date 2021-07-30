@@ -12,6 +12,9 @@
 
 std::string printQueue(std::vector<process> queue)
 {
+
+    std::sort(queue.begin(), queue.end());
+    
     if (queue.size() == 0)
     {
         std::string emptyQ = "[Q empty]";
