@@ -74,6 +74,21 @@ double avg_turnaround_time(std::vector<process> original, std::vector<process> c
     }
     return sum / size;
 }
+
+bool alphaSort(process a, process b)
+{
+    return (a < b);
+}
+bool tauSort(process a, process b)
+{
+    if(a.getTau() == b.getTau() - b.CPU_use_time()){
+        return a < b;
+    }
+    return (a.getTau() < b.getTau() - b.CPU_use_time());
+
+
+}
+
 //algo go here
 
 //First-come-first-served (FCFS)
@@ -289,60 +304,6 @@ void SJF(std::vector<process> processes, double t_cs, double alpha, int tau_init
     /*start simulation, continue until all processes are completed*/
     while (completed != total_processes)
     {
-        /*check if processes arrive*/
-        /*check if processes arrive*/
-        for (int i = 0; i < total_processes; i++)
-        {
-            if (processes[i].getArrivialTime() == time)
-            {
-                queue.push_back(processes[i]);
-                if (time <= 999)
-                {
-                    printf("time %dms: Process %c (tau %dms) arrived; added to ready queue %s\n", time, toupper(char(processes[i].getpID())), processes[i].getTau(), printQueue(queue).c_str());
-                }
-            }
-        }
-        /*check if waitIO queue has anything that finished*/
-        if (waitstate.size() != 0)
-        {
-            //loop through, check if any IO has finished
-            unsigned int i = 0;
-            std::vector<process> temp_list;
-            while (i < waitstate.size())
-            {
-                //add to ready queue
-                process curr = waitstate[i];
-                curr.setBurst(aCPU.get_prev());
-                if (int(curr.getWaitTime()) == time)
-                {
-                    curr.setWaitTime(-99);
-                    //process completed IO burst, add back to the ready queue
-                    temp_list.push_back(curr);
-                    //adjust for removal of process
-                    std::vector<process>::iterator itr2 = waitstate.begin() + i;
-                    waitstate.erase(itr2);
-                }
-                else
-                {
-                    i++;
-                }
-            }
-            if (temp_list.size() > 0)
-            {
-                //sort based on tau and add to ready queue
-                //still need to fix tau sorting
-                std::sort(temp_list.begin(), temp_list.end());
-                for (unsigned int i = 0; i < temp_list.size(); i++)
-                {
-                    queue.push_back(temp_list[i]);
-                    if (time <= 999)
-                    {
-                        printf("time %dms: Process %c (tau %dms) completed I/O; added to ready queue %s\n", time, toupper(char(temp_list[i].getpID())), temp_list[i].getTau(), printQueue(queue).c_str());
-                    }
-                }
-            }
-        }
-
         if (aCPU.checkstate() == true)
         {
             /*something is running on the CPU, check if it is finished*/
@@ -364,6 +325,8 @@ void SJF(std::vector<process> processes, double t_cs, double alpha, int tau_init
                     aCPU.setProcess(i);
 
                     printf("time %dms: Process %c terminated %s\n", time, toupper(char(current.getpID())), printQueue(queue).c_str());
+                    aCPU.updateContext(t_cs/2);
+
 
                     if (completed == total_processes)
                     {
@@ -416,6 +379,63 @@ void SJF(std::vector<process> processes, double t_cs, double alpha, int tau_init
             }
         }
 
+        /*check if waitIO queue has anything that finished*/
+        if (waitstate.size() != 0)
+        {
+            //loop through, check if any IO has finished
+            unsigned int i = 0;
+            std::vector<process> temp_list;
+            while (i < waitstate.size())
+            {
+                //add to ready queue
+                process curr = waitstate[i];
+                curr.setBurst(aCPU.get_prev());
+                if (int(curr.getWaitTime()) == time)
+                {
+                    curr.setWaitTime(-99);
+                    //process completed IO burst, add back to the ready queue
+                    temp_list.push_back(curr);
+                    //adjust for removal of process
+                    std::vector<process>::iterator itr2 = waitstate.begin() + i;
+                    waitstate.erase(itr2);
+                }
+                else
+                {
+                    i++;
+                }
+            }
+            if (temp_list.size() > 0)
+            {
+                //sort based on tau and add to ready queue
+                //still need to fix tau sorting
+                std::sort(temp_list.begin(), temp_list.end());
+                for (unsigned int i = 0; i < temp_list.size(); i++)
+                {
+                    queue.push_back(temp_list[i]);
+                    std::sort(queue.begin(), queue.end(), tauSort);
+                    if (time <= 999)
+                    {
+                        printf("time %dms: Process %c (tau %dms) completed I/O; added to ready queue %s\n", time, toupper(char(temp_list[i].getpID())), temp_list[i].getTau(), printQueue(queue).c_str());
+                    }
+                }
+            }
+        }
+
+        /*check if processes arrive*/
+        for (int i = 0; i < total_processes; i++)
+        {
+            if (processes[i].getArrivialTime() == time)
+            {
+                queue.push_back(processes[i]);
+                //add Tau sort
+                std::sort(queue.begin(), queue.end(), tauSort);
+                if (time <= 999)
+                {
+                    printf("time %dms: Process %c (tau %dms) arrived; added to ready queue %s\n", time, toupper(char(processes[i].getpID())), processes[i].getTau(), printQueue(queue).c_str());
+                }
+            }
+        }
+
         if (aCPU.checkstate() == false && aCPU.getContext() == 0 && queue.size() != 0)
         {
             /*start running process*/
@@ -451,10 +471,6 @@ void SJF(std::vector<process> processes, double t_cs, double alpha, int tau_init
 
 //Shortest remaining time (SRT)
 
-bool alphaSort(process a, process b)
-{
-    return (a < b);
-}
 void SRT(std::vector<process> processes, double t_cs, double alpha, int tau_initial, FILE *fp)
 {
     int total_processes = processes.size();
@@ -479,7 +495,7 @@ void SRT(std::vector<process> processes, double t_cs, double alpha, int tau_init
     while (completed != total_processes)
     {
 
-          if (aCPU.checkstate() == true)
+        if (aCPU.checkstate() == true)
         {
             /*something is running on the CPU, check if it is finished*/
             process current = aCPU.getProcess();
@@ -544,6 +560,7 @@ void SRT(std::vector<process> processes, double t_cs, double alpha, int tau_init
                     aCPU.updateContext(t_cs / 2);
                     if (time <= 999)
                     {
+
                         printf("time %dms: Process %c switching out of CPU; will block on I/O until time %dms %s\n", int(time), toupper(char(current.getpID())), int(waiting_time), printQueue(queue).c_str());
                     }
                 }
@@ -551,9 +568,6 @@ void SRT(std::vector<process> processes, double t_cs, double alpha, int tau_init
             }
         }
 
-
-        /*check if processes arrive*/
-       
         /*check if waitIO queue has anything that finished*/
         if (waitstate.size() != 0)
         {
@@ -588,25 +602,54 @@ void SRT(std::vector<process> processes, double t_cs, double alpha, int tau_init
                 for (unsigned int i = 0; i < temp_list.size(); i++)
                 {
                     queue.push_back(temp_list[i]);
+
+                    std::sort(queue.begin(), queue.end(), tauSort);
+                    //check if preempts currently running process on CPU
+                    /*if (aCPU.checkstate() == true)
+                    {
+                        //process is currently running, check preemption
+                        if (temp_list[i].getTau() < aCPU.getProcess().getTau() - aCPU.getProcess().CPU_use_time())
+                        {
+                            //preempt
+                            preemptions += 1;
+
+                            if (time <= 999)
+                            {
+                                printf("time %dms: Process %c (tau %dms) completed I/O; preempted process %c %s\n", time, toupper(char(temp_list[i].getpID())), int(temp_list[i].getTau()), toupper(char(aCPU.getProcess().getpID())), printQueue(queue).c_str());
+                            }
+                            //add preempted process to queue, remove process from queue, set CPU currently running process
+                            std::vector<process>::iterator itr;
+
+                            for (itr = queue.begin(); itr != queue.end(); ++itr)
+                            {
+                                if (itr->getpID() == temp_list[i].getpID())
+                                {
+                                    itr = queue.erase(itr);
+                                    break;
+                                }
+                            }
+                            queue.push_back(aCPU.getProcess());
+                            aCPU.setProcess(temp_list[i]);
+                            aCPU.updateContext(t_cs / 2);
+                            aCPU.setState(false);
+                        }
+                    }*/
+
                     if (time <= 999)
                     {
+
                         printf("time %dms: Process %c (tau %dms) completed I/O; added to ready queue %s\n", time, toupper(char(temp_list[i].getpID())), temp_list[i].getTau(), printQueue(queue).c_str());
                     }
                 }
             }
         }
 
-      //check if arrived 
-
-       for (int i = 0; i < total_processes; i++)
+        //check if arrived
+        for (int i = 0; i < total_processes; i++)
         {
             if (processes[i].getArrivialTime() == time)
             {
-
                 //check if preemption occurs
-                //CHANGE: instead of looking at a processes' arrival time, you should look at elapsed CPU time use
-                //also, i think you should look at the process coming in (processes[i]) compared to the processes in the ready queue
-                //something like :
                 for (unsigned int j = 0; j < queue.size(); j++)
                 {
                     if (processes[i].getTau() < queue[j].getTau() - queue[j].CPU_use_time())
@@ -616,12 +659,13 @@ void SRT(std::vector<process> processes, double t_cs, double alpha, int tau_init
                         preemptions += 1;
                     }
                 }
-
+                //resolving ties
                 if (processes[i].getTau() == (processes[i - 1].getTau() - processes[i].CPU_use_time()))
                 {
-                    //CHANGE: here need to sort them alphabetically (if they have the same Tau values)
-                    std::sort(queue.begin(), queue.end(), alphaSort);
+                    //sort alphabetically (if they have the same Tau values)
                     queue.push_back(processes[i]);
+
+                    std::sort(queue.begin(), queue.end());
                 }
                 else
                 {
