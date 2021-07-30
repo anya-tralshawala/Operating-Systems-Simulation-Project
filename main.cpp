@@ -18,17 +18,10 @@ std::string printQueue(std::vector<process> queue)
         return emptyQ;
     }
     std::string Q = "[Q ";
-    for (int i = 0; i < queue.size(); i++)
+    for (unsigned int i = 0; i < queue.size(); i++)
     {
         char temp = toupper(char(queue[i].getpID()));
-        if (i != queue.size() - 1)
-        {
-            Q = Q + temp + " ";
-        }
-        else
-        {
-            Q = Q + temp;
-        }
+        Q = Q + temp;
     }
     Q = Q + "]";
     return Q;
@@ -40,12 +33,12 @@ double avg_burst(std::vector<process> processes)
     double sum = 0;
     double size = 0;
     double avg = 0;
-    for (int i = 0; i < processes.size(); i++)
+    for (unsigned int i = 0; i < processes.size(); i++)
     {
         //loop through all processes
         std::vector<cpuBurst> current_bursts = processes[i].getAllBursts();
         double burst_sum = 0;
-        for (int j = 0; j < current_bursts.size(); j++)
+        for (unsigned int j = 0; j < current_bursts.size(); j++)
         {
             //loop through all bursts
             burst_sum += current_bursts[j].get_CPUtime();
@@ -61,7 +54,7 @@ double avg_wait_time(std::vector<process> completed_processes)
 {
     double sum = 0;
     double size = 0;
-    for (int i = 0; i < completed_processes.size(); i++)
+    for (unsigned int i = 0; i < completed_processes.size(); i++)
     {
         sum += completed_processes[i].getWait();
         size += completed_processes[i].getTotalBursts();
@@ -74,7 +67,7 @@ double avg_turnaround_time(std::vector<process> original, std::vector<process> c
 {
     double sum = 0;
     double size = 0;
-    for (int i = 0; i < completed_processes.size(); i++)
+    for (unsigned int i = 0; i < completed_processes.size(); i++)
     {
         sum += completed_processes[i].getTurnaroundTime();
         size += completed_processes[i].getTotalBursts();
@@ -106,61 +99,7 @@ void FCFS(std::vector<process> processes, double t_cs, int tau_initial, FILE *fp
     /*start simulation, continue until all processes are completed*/
     while (completed != total_processes)
     {
-        /*check if processes arrive*/
-        for (int i = 0; i < total_processes; i++)
-        {
-            if (processes[i].getArrivialTime() == time)
-            {
-                queue.push_back(processes[i]);
-                if (time <= 999)
-                {
-                    printf("time %dms: Process %c arrived; added to ready queue %s\n", time, toupper(char(processes[i].getpID())), printQueue(queue).c_str());
-                }
-            }
-        }
-        /*check if waitIO queue has anything that finished*/
-        if (waitstate.size() != 0)
-        {
 
-            //loop through, check if any IO has finished
-            int save_size = waitstate.size();
-            int i = 0;
-            std::vector<process> temp_list;
-            while (i < waitstate.size())
-            {
-                process curr = waitstate[i];
-                curr.setBurst(aCPU.get_prev());
-                //printf("curr: %f\n", curr.getWaitTime());
-                //printf("time: %d\n", time);
-                if (int(curr.getWaitTime()) == time)
-                {
-                    curr.setWaitTime(-99);
-                    //process completed IO burst, add back to the ready queue
-                    temp_list.push_back(curr);
-                    //adjust for removal of process
-                    save_size = waitstate.size();
-                    std::vector<process>::iterator itr2 = waitstate.begin() + i;
-                    waitstate.erase(itr2);
-                }
-                else
-                {
-                    i++;
-                }
-            }
-            if (temp_list.size() > 0)
-            {
-                //sort based on pid and add to ready queue
-                std::sort(temp_list.begin(), temp_list.end());
-                for (int i = 0; i < temp_list.size(); i++)
-                {
-                    queue.push_back(temp_list[i]);
-                    if (time <= 999)
-                    {
-                        printf("time %dms: Process %c completed I/O; added to ready queue %s\n", time, toupper(char(temp_list[i].getpID())), printQueue(queue).c_str());
-                    }
-                }
-            }
-        }
         /*check is process is done running on CPU*/
         if (aCPU.checkstate() == true)
         {
@@ -231,6 +170,62 @@ void FCFS(std::vector<process> processes, double t_cs, int tau_initial, FILE *fp
             }
         }
 
+        /*check if waitIO queue has anything that finished*/
+        if (waitstate.size() != 0)
+        {
+
+            //loop through, check if any IO has finished
+
+            unsigned int i = 0;
+            std::vector<process> temp_list;
+            while (i < waitstate.size())
+            {
+                process curr = waitstate[i];
+                curr.setBurst(aCPU.get_prev());
+                //printf("curr: %f\n", curr.getWaitTime());
+                //printf("time: %d\n", time);
+                if (int(curr.getWaitTime()) == time)
+                {
+                    curr.setWaitTime(-99);
+                    //process completed IO burst, add back to the ready queue
+                    temp_list.push_back(curr);
+                    //adjust for removal of process
+
+                    std::vector<process>::iterator itr2 = waitstate.begin() + i;
+                    waitstate.erase(itr2);
+                }
+                else
+                {
+                    i++;
+                }
+            }
+            if (temp_list.size() > 0)
+            {
+                //sort based on pid and add to ready queue
+                std::sort(temp_list.begin(), temp_list.end());
+                for (unsigned int i = 0; i < temp_list.size(); i++)
+                {
+                    queue.push_back(temp_list[i]);
+                    if (time <= 999)
+                    {
+                        printf("time %dms: Process %c completed I/O; added to ready queue %s\n", time, toupper(char(temp_list[i].getpID())), printQueue(queue).c_str());
+                    }
+                }
+            }
+        }
+
+        /*check if processes arrive*/
+        for (int i = 0; i < total_processes; i++)
+        {
+            if (processes[i].getArrivialTime() == time)
+            {
+                queue.push_back(processes[i]);
+                if (time <= 999)
+                {
+                    printf("time %dms: Process %c arrived; added to ready queue %s\n", time, toupper(char(processes[i].getpID())), printQueue(queue).c_str());
+                }
+            }
+        }
         /*check if ready queue is not empty, and if CPU is available*/
         if (aCPU.checkstate() == false && aCPU.getContext() == 0 && queue.size() != 0)
         {
@@ -254,7 +249,7 @@ void FCFS(std::vector<process> processes, double t_cs, int tau_initial, FILE *fp
             aCPU.updateContext(-1);
         }
         //update wait times, CPU is not available processes waiting
-        for (int k = 0; k < queue.size(); k++)
+        for (unsigned int k = 0; k < queue.size(); k++)
         {
             queue[k].updateWaitTime();
         }
@@ -303,7 +298,7 @@ void SJF(std::vector<process> processes, double t_cs, double alpha, int tau_init
                 queue.push_back(processes[i]);
                 if (time <= 999)
                 {
-                    printf("time %dms: Process %c arrived; added to ready queue %s\n", time, toupper(char(processes[i].getpID())), printQueue(queue).c_str());
+                    printf("time %dms: Process %c (tau %dms) arrived; added to ready queue %s\n", time, toupper(char(processes[i].getpID())), processes[i].getTau(), printQueue(queue).c_str());
                 }
             }
         }
@@ -311,8 +306,7 @@ void SJF(std::vector<process> processes, double t_cs, double alpha, int tau_init
         if (waitstate.size() != 0)
         {
             //loop through, check if any IO has finished
-            int save_size = waitstate.size();
-            int i = 0;
+            unsigned int i = 0;
             std::vector<process> temp_list;
             while (i < waitstate.size())
             {
@@ -325,7 +319,6 @@ void SJF(std::vector<process> processes, double t_cs, double alpha, int tau_init
                     //process completed IO burst, add back to the ready queue
                     temp_list.push_back(curr);
                     //adjust for removal of process
-                    save_size = waitstate.size();
                     std::vector<process>::iterator itr2 = waitstate.begin() + i;
                     waitstate.erase(itr2);
                 }
@@ -339,7 +332,7 @@ void SJF(std::vector<process> processes, double t_cs, double alpha, int tau_init
                 //sort based on tau and add to ready queue
                 //still need to fix tau sorting
                 std::sort(temp_list.begin(), temp_list.end());
-                for (int i = 0; i < temp_list.size(); i++)
+                for (unsigned int i = 0; i < temp_list.size(); i++)
                 {
                     queue.push_back(temp_list[i]);
                     if (time <= 999)
@@ -406,7 +399,7 @@ void SJF(std::vector<process> processes, double t_cs, double alpha, int tau_init
                     current.updateTau(alpha, totalCPUtime);
                     if (time <= 999)
                     {
-                        printf("time %dms: Recalculated tau from %dms to %dms for process %s\n", time, save_tau, current.getTau(), printQueue(queue).c_str());
+                        printf("time %dms: Recalculated tau from %dms to %dms for process %c %s\n", time, save_tau, current.getTau(), toupper(char(current.getpID())), printQueue(queue).c_str());
                     }
                     waitstate.push_back(current);
                     double switch_time = t_cs / 2;
@@ -447,7 +440,7 @@ void SJF(std::vector<process> processes, double t_cs, double alpha, int tau_init
         }
 
         //update wait times, CPU is not available processes waiting
-        for (int k = 0; k < queue.size(); k++)
+        for (unsigned int k = 0; k < queue.size(); k++)
         {
             queue[k].updateWaitTime();
         }
@@ -495,7 +488,7 @@ void SRT(std::vector<process> processes, double t_cs, double alpha, int tau_init
                 //CHANGE: instead of looking at a processes' arrival time, you should look at elapsed CPU time use
                 //also, i think you should look at the process coming in (processes[i]) compared to the processes in the ready queue
                 //something like :
-                for (int j = 0; j < queue.size(); j++)
+                for (unsigned int j = 0; j < queue.size(); j++)
                 {
                     if (processes[i].getTau() < queue[j].getTau() - queue[j].CPU_use_time())
                     {
@@ -525,8 +518,7 @@ void SRT(std::vector<process> processes, double t_cs, double alpha, int tau_init
         if (waitstate.size() != 0)
         {
             //loop through, check if any IO has finished
-            int save_size = waitstate.size();
-            int i = 0;
+            unsigned int i = 0;
             std::vector<process> temp_list;
             while (i < waitstate.size())
             {
@@ -539,7 +531,6 @@ void SRT(std::vector<process> processes, double t_cs, double alpha, int tau_init
                     //process completed IO burst, add back to the ready queue
                     temp_list.push_back(curr);
                     //adjust for removal of process
-                    save_size = waitstate.size();
                     std::vector<process>::iterator itr2 = waitstate.begin() + i;
                     waitstate.erase(itr2);
                 }
@@ -553,7 +544,7 @@ void SRT(std::vector<process> processes, double t_cs, double alpha, int tau_init
                 //sort based on tau and add to ready queue
                 //still need to fix tau sorting
                 std::sort(temp_list.begin(), temp_list.end());
-                for (int i = 0; i < temp_list.size(); i++)
+                for (unsigned int i = 0; i < temp_list.size(); i++)
                 {
                     queue.push_back(temp_list[i]);
                     if (time <= 999)
@@ -619,7 +610,7 @@ void SRT(std::vector<process> processes, double t_cs, double alpha, int tau_init
                     current.updateTau(alpha, totalCPUtime);
                     if (time <= 999)
                     {
-                        printf("time %dms: Recalculated tau from %dms to %dms for process %s\n", time, save_tau, current.getTau(), printQueue(queue).c_str());
+                        printf("time %dms: Recalculated tau from %dms to %dms for process %c %s\n", time, save_tau, current.getTau(), toupper(char(current.getpID())), printQueue(queue).c_str());
                     }
                     waitstate.push_back(current);
                     double switch_time = t_cs / 2;
@@ -659,7 +650,7 @@ void SRT(std::vector<process> processes, double t_cs, double alpha, int tau_init
             aCPU.updateContext(-1);
         }
         //update wait times, CPU is not available processes waiting
-        for (int k = 0; k < queue.size(); k++)
+        for (unsigned int k = 0; k < queue.size(); k++)
         {
             queue[k].updateWaitTime();
         }
@@ -811,8 +802,7 @@ void RR(std::vector<process> processes, double t_cs, double t_slice, int tau_ini
         if (waitstate.size() != 0)
         {
             //loop through, check if any IO has finished
-            int save_size = waitstate.size();
-            int i = 0;
+            unsigned int i = 0;
             std::vector<process> temp_list;
             while (i < waitstate.size())
             {
@@ -823,7 +813,6 @@ void RR(std::vector<process> processes, double t_cs, double t_slice, int tau_ini
                     //process completed IO burst, add back to the ready queue
                     temp_list.push_back(curr);
                     //adjust for removal of process
-                    save_size = waitstate.size();
                     std::vector<process>::iterator itr2 = waitstate.begin() + i;
                     waitstate.erase(itr2);
                 }
@@ -836,7 +825,7 @@ void RR(std::vector<process> processes, double t_cs, double t_slice, int tau_ini
             {
                 //sort based on pid and add to ready queue
                 std::sort(temp_list.begin(), temp_list.end());
-                for (int i = 0; i < temp_list.size(); i++)
+                for (unsigned int i = 0; i < temp_list.size(); i++)
                 {
                     queue.push_back(temp_list[i]);
                     if (time <= 999)
@@ -894,7 +883,7 @@ void RR(std::vector<process> processes, double t_cs, double t_slice, int tau_ini
             aCPU.updateContext(-1);
         }
         //update wait times, CPU is not available processes waiting
-        for (int k = 0; k < queue.size(); k++)
+        for (unsigned int k = 0; k < queue.size(); k++)
         {
             queue[k].updateWaitTime();
             queue[k].setTurnaroundTime(queue[k].getTurnaroundTime() + 1);
@@ -988,11 +977,18 @@ int main(int argc, char *argv[])
     srand48(seed);
     std::vector<process> processes = create_processes(n, seed, lambda, upper_bound, tau_initial);
 
-    for (int i = 0; i < processes.size(); i++)
+    for (unsigned int i = 0; i < processes.size(); i++)
     {
-        printf("Process %c (arrival time %d ms) %d CPU bursts (tau %dms)\n", toupper(char(processes[i].getpID())), processes[i].getArrivialTime(), processes[i].getTotalBursts(), int(tau_initial));
+        if (processes[i].getTotalBursts() == 1)
+        {
+            /* code */
+            printf("Process %c (arrival time %d ms) %d CPU burst (tau %dms)\n", toupper(char(processes[i].getpID())), processes[i].getArrivialTime(), processes[i].getTotalBursts(), int(tau_initial));
+        }
+        else
+        {
+            printf("Process %c (arrival time %d ms) %d CPU bursts (tau %dms)\n", toupper(char(processes[i].getpID())), processes[i].getArrivialTime(), processes[i].getTotalBursts(), int(tau_initial));
+        }
     }
-    printf("\n");
     printf("\n");
 
     FCFS(processes, t_cs, tau_initial, myfile);
